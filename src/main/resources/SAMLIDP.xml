@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<EntityDescriptor entityID="https://nb19678.elcanet.local:8443/auth/realms/KeycloakSharePointRealm"
+<EntityDescriptor entityID="https://localhost:8080/auth/realms/TestRealm"
                   xmlns="urn:oasis:names:tc:SAML:2.0:metadata"
                   xmlns:dsig="http://www.w3.org/2000/09/xmldsig#"
                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -7,14 +7,14 @@
                       protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
         <SingleLogoutService
                 Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
-                Location="https://nb19678.elcanet.local:8443/auth/realms/KeycloakSharePointRealm/protocol/saml" />
+                Location="https://localhost:8080/auth/realms/TestRealm/protocol/saml" />
         <NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:persistent</NameIDFormat>
         <NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</NameIDFormat>
         <NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</NameIDFormat>
         <NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress</NameIDFormat>
 
         <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
-                             Location="https://nb19678.elcanet.local:8443/auth/realms/KeycloakSharePointRealm/protocol/saml" />
+                             Location="https://localhost:8080/auth/realms/TestRealm/protocol/saml" />
         <KeyDescriptor use="signing">
             <dsig:KeyInfo>
                 <dsig:KeyName>_vdViLJcsLc_J17txWLnoU1v6X5nFUsLNjNpAFelXfs</dsig:KeyName>

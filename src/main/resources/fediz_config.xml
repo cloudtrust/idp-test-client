@@ -21,7 +21,7 @@
         <!--The protocol section contains the configuration of the IDP-->
         <protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="federationProtocolType" version="1.2">
             <!--WS-Fed endpoint of the IdP, for keyclock this address can be obtained at http[s]://{host:port}/auth/realms/{realm-name}/protocol/wsfed/descriptor-->
-            <issuer>http://nb19678.elcanet.local:8080/auth/realms/KeycloakSharePointRealm/protocol/wsfed</issuer>
+            <issuer>http://localhost:8080/auth/realms/TestRealm/protocol/wsfed</issuer>
             <!--In Keycloak this is not in fact the name of the realm, but the name of the client (client ID parameter)-->
             <realm>WSFedTestClient</realm>
             <!-- Undocumented reply address for the IdP. This value should not be changed, and MUST be present-->
