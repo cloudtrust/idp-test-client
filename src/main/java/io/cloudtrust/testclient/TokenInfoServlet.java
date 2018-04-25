@@ -23,7 +23,7 @@ import java.security.Principal;
 /**
  * This class implements a servlet that displays the information contained in the token provided by the IdP.
  *
- * Upon a get, it displays the user id used by the protocol, the claims that are recognised, and the raw token
+ * Upon a get, it displays the user id used by the protocol, the claims that are recognised, and the raw token/profile
  */
 
 @WebServlet(

@@ -14,8 +14,23 @@ import org.w3c.dom.Element;
 
 import java.util.*;
 
-public class BetterSAML2Authenticator extends SAML2Authenticator {
+/**
+ * This class replaces the SAML2Authenticator with the sole purpose of correcting the validate method:
+ * the default method cannot handle SAML assertions in which multiple attributes have the same name, whereas this one
+ * can.
+ */
+public final class BetterSAML2Authenticator extends SAML2Authenticator {
 
+    /**
+     * Validate the credentials. It should throw a {@link CredentialsException} in case of failure.
+     *
+     * Correctly handles SAML assertions which have the same name
+     *
+     * @param credentials the given credentials
+     * @param context the web context
+     * @throws HttpAction requires a specific HTTP action if necessary
+     * @throws CredentialsException the credentials are invalid
+     */
     @Override
     public void validate(final SAML2Credentials credentials, final WebContext context) throws HttpAction, CredentialsException {
         init(context);

@@ -198,6 +198,16 @@ public class SecurityConfig {
         @Autowired
         private Config config;
 
+        /**
+         * Equivalent to the <sec:http> configuration element. Used to set the filter and secured/unsecured patterns.
+         * here set to match all other requests
+         *
+         * The configuration of the callback filter for pac4j is set done here, as well as the standard logic for
+         * a spring security logout.
+         *
+         * @param http http the {@link HttpSecurity} to modify
+         * @throws Exception required by overwritten method signature
+         */
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             final CallbackFilter callbackFilter = new CallbackFilter(config);
