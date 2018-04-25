@@ -70,7 +70,7 @@ Note that the normally the Fediz library provides configuration metadata for the
 
 ### Command line options
 
-After building, run the resulting jar with `java -jar IdPTestClient`. 
+After building, run the resulting jar with `java -jar IdPTestClient.jar`. 
 
 Any configuration element of the **application.properties** can be modified at runtime by appending a value with the 
 format `--<PROPERTY.NAME>=<VALUE>`. For example, the port can be set to 9000 `--server.port=9000`.
