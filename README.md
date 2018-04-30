@@ -78,7 +78,7 @@ format `--<PROPERTY.NAME>=<VALUE>`. For example, the port can be set to 9000 `--
 As the paths to all the other configuration files are specified in the **application.properties**, meaning that the 
 application can be fully configured even with a built jar by specifying the properties and properties files when running
 the application. For example, the path to a fediz configuration file can be specified by adding 
-`--fediz.configFilePath=file://</PATH/TO/FILE>`.
+`--fediz.configFilePath=</PATH/TO/FILE>`.
 
 ### Using the application
 
