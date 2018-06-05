@@ -5,7 +5,7 @@
         <audienceUris>
             <!--The audience items corresponds to the Valid Redirect URIs in keycloak. If the port used for the client
             is changed, it has to be modified here as well. The address must correspond to the one used in the IdP to reach the client-->
-            <audienceItem>https://ct-int-client.cloudtrust.io/</audienceItem>
+            <audienceItem>https://ct-int-client.cloudtrust.io</audienceItem>
         </audienceUris>
         <certificateStores>
             <trustManager>
