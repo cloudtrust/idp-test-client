@@ -5,7 +5,7 @@
         <audienceUris>
             <!--The audience items corresponds to the Valid Redirect URIs in keycloak. If the port used for the client
             is changed, it has to be modified here as well. The address must correspond to the one used in the IdP to reach the client-->
-            <audienceItem>http://testclient:7005/</audienceItem>
+            <audienceItem>http://ct-int-client.cloudtrust.io:7005/</audienceItem>
         </audienceUris>
         <certificateStores>
             <trustManager>
@@ -21,7 +21,7 @@
         <!--The protocol section contains the configuration of the IDP-->
         <protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="federationProtocolType" version="1.2">
             <!--WS-Fed endpoint of the IdP, for keyclock this address can be obtained at http[s]://{host:port}/auth/realms/{realm-name}/protocol/wsfed/descriptor-->
-            <issuer>http://keycloak:8080/auth/realms/Keycloak_testing/protocol/wsfed</issuer>
+            <issuer>https://ct-int-keycloak.cloudtrust.io/auth/realms/Keycloak_testing/protocol/wsfed</issuer>
             <!--In Keycloak this is not in fact the name of the realm, but the name of the client (client ID parameter)-->
             <realm>client_wsfed</realm>
             <!-- Undocumented reply address for the IdP. This value should not be changed, and MUST be present-->
