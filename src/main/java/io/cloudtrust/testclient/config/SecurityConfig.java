@@ -173,12 +173,14 @@ public class SecurityConfig {
 
             boolean isWsFed = protocol == ProtocolType.WSFED;
             String logoutPath= isWsFed?fedizConfig.getFedizContext().getLogoutURL():"/?defaulturlafterlogoutafteridp";
+            String logoutAddress=isWsFed?fedizConfig.getFedizContext().getAudienceUris().get(0):"http://" + serverAddress + ":" + serverPort + "/";
 
-            final LogoutFilter filter = new LogoutFilter(config, "http://" + serverAddress + ":" + serverPort + logoutPath);
+            final LogoutFilter filter = new LogoutFilter(config, logoutAddress + logoutPath);
             filter.setLocalLogout(!isWsFed);
             filter.setDestroySession(!isWsFed);
             filter.setCentralLogout(!isWsFed);
-            filter.setLogoutUrlPattern("http://" + serverAddress + ":" + serverPort + "/.*");
+            fedizConfig.getFedizContext().getAudienceUris().get(0);
+            filter.setLogoutUrlPattern(logoutAddress + ".*");
 
             http
                     .antMatcher("/singleLogout")
