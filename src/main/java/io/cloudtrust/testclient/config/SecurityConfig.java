@@ -172,7 +172,7 @@ public class SecurityConfig {
         protected void configure(final HttpSecurity http) throws Exception {
 
             boolean isWsFed = protocol == ProtocolType.WSFED;
-            String logoutPath= isWsFed?fedizConfig.getFedizContext().getLogoutURL():"/?defaulturlafterlogoutafteridp";
+            String logoutPath= isWsFed?fedizConfig.getFedizContext().getLogoutURL():"?defaulturlafterlogoutafteridp";
             String logoutAddress=isWsFed?fedizConfig.getFedizContext().getAudienceUris().get(0):"http://" + serverAddress + ":" + serverPort + "/";
 
             final LogoutFilter filter = new LogoutFilter(config, logoutAddress + logoutPath);
