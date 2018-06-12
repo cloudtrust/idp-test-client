@@ -5,7 +5,7 @@
         <audienceUris>
             <!--The audience items corresponds to the Valid Redirect URIs in keycloak. If the port used for the client
             is changed, it has to be modified here as well. The address must correspond to the one used in the IdP to reach the client-->
-            <audienceItem>https://ct-int-client.cloudtrust.io</audienceItem>
+            <audienceItem>https://int-client.cloudtrust.io</audienceItem>
         </audienceUris>
         <certificateStores>
             <trustManager>
@@ -25,13 +25,13 @@
             <!--In Keycloak this is not in fact the name of the realm, but the name of the client (client ID parameter)-->
             <realm>client_wsfed</realm>
             <!-- Undocumented reply address for the IdP. This value should not be changed, and MUST be present-->
-            <reply>https://ct-int-client.cloudtrust.io/j_spring_fediz_security_check</reply>
+            <reply>https://int-client.cloudtrust.io/j_spring_fediz_security_check</reply>
         </protocol>
         <!-- Undocumented values for fediz single logout. See CommonConfig and SecurityConfig for how to set the
         beans and filters for the SLO to work-->
         <!--This sets the address to call to start the signout process from the client-->
         <logoutURL>/wsfedLogout</logoutURL>
         <!-- This sets the value to which to redirect after the logout process-->
-        <logoutRedirectTo>https://ct-int-client.cloudtrust.io/performLogout</logoutRedirectTo>
+        <logoutRedirectTo>https://int-client.cloudtrust.io/performLogout</logoutRedirectTo>
     </contextConfig>
 </FedizConfig>
