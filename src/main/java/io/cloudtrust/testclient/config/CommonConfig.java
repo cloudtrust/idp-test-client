@@ -49,7 +49,8 @@ public class CommonConfig {
     private String samlPrivateKeyPassword;
     @Value("${saml.identityProviderMetadataPath:resource:SAMLIDP.xml}")
     private String samlIdentityProviderMetadataPath;
-
+    @Value("${saml.spMetadataPath:samlSPMetadata.xml}")
+    private String samlSpMetadataPath;
 
     @Value("${oidc.uri:http://localhost:8080/realms/TestRealm/.well-known/openid-configuration}")
     private String oidcURI;
@@ -75,7 +76,7 @@ public class CommonConfig {
                 samlIdentityProviderMetadataPath);
         cfg.setMaximumAuthenticationLifetime(3600);
         cfg.setServiceProviderEntityId(samlEntityId);
-        cfg.setServiceProviderMetadataPath(new File("samlSPMetadata.xml").getAbsolutePath());
+        cfg.setServiceProviderMetadataPath(new File(samlSpMetadataPath).getAbsolutePath());
         final SAML2Client saml2Client = new SAML2Client(cfg);
         saml2Client.setAuthenticator(new BetterSAML2Authenticator());
 
