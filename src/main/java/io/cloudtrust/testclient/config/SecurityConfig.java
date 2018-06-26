@@ -172,7 +172,7 @@ public class SecurityConfig {
             boolean isWsFed = protocol == ProtocolType.WSFED;
             String logoutPath= isWsFed?fedizConfig.getFedizContext().getLogoutURL():"?defaulturlafterlogoutafteridp";
             String logoutAddress=isWsFed?fedizConfig.getFedizContext().getAudienceUris().get(0):connectionAddress;
-            if (!logoutAddress.endsWith("/")) {
+            if (!logoutAddress.endsWith("/") && !logoutPath.startsWith("/")) {
                 logoutAddress += "/";
             }
 
