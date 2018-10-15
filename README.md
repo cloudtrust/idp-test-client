@@ -32,6 +32,11 @@ implementation of the supported protocols.
 
 Simply package with maven: `mvn clean package`. The result is an executable jar containing all necessary dependencies.
 
+## How to dockerize (WIP - First step will be moved to pom.xml)
+
+To create the image, run the following command after the build: `docker build -t idp-test-client .`
+To create the container (and run it), run the following command : `docker run -p 7000:7000 idp-test-client`
+
 ## How to configure
 
 The configuration uses the following files: a **keystore**, a **fediz configuration file**, a **SAML IDPSSODescriptor 
