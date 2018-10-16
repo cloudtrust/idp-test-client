@@ -32,10 +32,13 @@ implementation of the supported protocols.
 
 Simply package with maven: `mvn clean package`. The result is an executable jar containing all necessary dependencies.
 
-## How to dockerize (WIP - First step will be moved to pom.xml)
+## How to dockerize
 
 To create the image, run the following command after the build: `docker build -t idp-test-client .`
-To create the container (and run it), run the following command : `docker run -d -p 7000:7000 idp-test-client`
+
+To create the container (and start it), run the following command : `docker run -d -p 7000:7000 -t idp-test-client`
+
+To open a shell inside the running container : `docker run -it <container_name> sh`
 
 ## How to configure
 
