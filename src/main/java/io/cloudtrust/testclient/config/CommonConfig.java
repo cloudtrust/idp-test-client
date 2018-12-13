@@ -35,6 +35,9 @@ import java.io.File;
 @Configuration
 public class CommonConfig {
 
+    @Value("${connection.address:http://localhost:7000}")
+    private String connectionAddress;
+
     /*The path to the fediz configuration file. By default set to the empty string, to get the local file*/
     @Value("${fediz.configFilePath:}")
     private String configFilePath;
@@ -57,11 +60,6 @@ public class CommonConfig {
     private String oidcClientId;
     @Value("${oidc.secret:aSecret}")
     private String oidcSecret;
-
-    @Value("${server.port}")
-    private String serverPort;
-    @Value("${server.address}")
-    private String serverAddress;
 
     /**
      * Creates the bean for the pac4j configuration
@@ -87,7 +85,11 @@ public class CommonConfig {
         final OidcClient oidcClient = new OidcClient(oidcConfiguration);
         oidcClient.addAuthorizationGenerator((ctx, profile) -> { profile.addRole("ROLE_ADMIN"); return profile; });
 
-        final Clients clients = new Clients("http://" +serverAddress + ":" + serverPort + "/callback", oidcClient, saml2Client);
+        if (!connectionAddress.endsWith("/")){
+            connectionAddress += "/";
+        }
+        final Clients clients = new Clients(connectionAddress + "callback", oidcClient, saml2Client);
+
 
         final Config config = new Config(clients);
         config.addAuthorizer("admin", new RequireAnyRoleAuthorizer("ROLE_ADMIN"));

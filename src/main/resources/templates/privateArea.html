@@ -1,0 +1,54 @@
+<!DOCTYPE HTML>
+<!--
+	Projection by TEMPLATED
+	templated.co @templatedco
+	Released for free under the Creative Commons Attribution 3.0 license (templated.co/license)
+-->
+<html xmlns:th="http://www.thymeleaf.org">
+	<head>
+		<title>Business Application - Restricted Area</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+	</head>
+	<body class="subpage">
+
+		<!-- Header -->
+			<header id="header">
+				<div class="inner">
+					<a th:href="@{/}" class="logo">Business Application - Restricted Area</a>
+					<nav id="nav">
+						<span th:text="${username}"></span>|<a th:href="@{/singleLogout}">Logout</a>
+					</nav>
+					<a href="#navPanel" class="navPanelToggle"><span class="fa fa-bars"></span></a>
+				</div>
+			</header>
+
+		<!-- Main -->
+			<section id="main" class="wrapper">
+				<div class="inner">
+					<header class="align-center">
+						<h2>Welcome, <span th:text="${username}"></span>!</h2>
+						<p>You are now successfully authenticated</p>
+					</header>
+
+					<!-- Intro -->
+						<div class="row">
+							<section class="10u 19u$(medium)">
+								<h2>Soon...</h2>
+								<p>... you shall be able to securely access you private web site by using Cloudtrust as your preferred Identity Provider</p>
+							</section>
+						</div>
+
+					<hr class="major" />
+
+					
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/skel.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>

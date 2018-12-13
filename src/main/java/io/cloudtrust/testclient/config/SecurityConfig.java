@@ -140,10 +140,8 @@ public class SecurityConfig {
     @Order(2)
     public static class SingleLogoutConfig extends WebSecurityConfigurerAdapter {
 
-        @Value("${server.port}")
-        private String serverPort;
-        @Value("${server.address}")
-        private String serverAddress;
+        @Value("${connection.address:http://localhost:7000}")
+        private String connectionAddress;
         @Value("${connection.protocol:WSFED}")
         private String connectionProtocol;
 
@@ -172,13 +170,19 @@ public class SecurityConfig {
         protected void configure(final HttpSecurity http) throws Exception {
 
             boolean isWsFed = protocol == ProtocolType.WSFED;
-            String logoutPath= isWsFed?fedizConfig.getFedizContext().getLogoutURL():"/?defaulturlafterlogoutafteridp";
+            String logoutPath= isWsFed?fedizConfig.getFedizContext().getLogoutURL():"?defaulturlafterlogoutafteridp";
+            String logoutAddress=isWsFed?fedizConfig.getFedizContext().getAudienceUris().get(0):connectionAddress;
+            if (!logoutAddress.endsWith("/") && !logoutPath.startsWith("/")) {
+                logoutAddress += "/";
+            }
 
-            final LogoutFilter filter = new LogoutFilter(config, "http://" + serverAddress + ":" + serverPort + logoutPath);
+
+            final LogoutFilter filter = new LogoutFilter(config, logoutAddress + logoutPath);
             filter.setLocalLogout(!isWsFed);
             filter.setDestroySession(!isWsFed);
             filter.setCentralLogout(!isWsFed);
-            filter.setLogoutUrlPattern("http://" + serverAddress + ":" + serverPort + "/.*");
+            fedizConfig.getFedizContext().getAudienceUris().get(0);
+            filter.setLogoutUrlPattern(logoutAddress + ".*");
 
             http
                     .antMatcher("/singleLogout")

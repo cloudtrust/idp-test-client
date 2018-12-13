@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<EntityDescriptor entityID="https://localhost:8080/auth/realms/TestRealm"
+<EntityDescriptor entityID="https://keycloak-cloudtrust-staging.openshift.elca-services.com/auth/realms/Cloudtrust"
                   xmlns="urn:oasis:names:tc:SAML:2.0:metadata"
                   xmlns:dsig="http://www.w3.org/2000/09/xmldsig#"
                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -7,19 +7,19 @@
                       protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
         <SingleLogoutService
                 Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
-                Location="https://localhost:8080/auth/realms/TestRealm/protocol/saml" />
+                Location="https://keycloak-cloudtrust-staging.openshift.elca-services.com/auth/realms/Cloudtrust/protocol/saml" />
         <NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:persistent</NameIDFormat>
         <NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</NameIDFormat>
         <NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</NameIDFormat>
         <NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress</NameIDFormat>
 
         <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
-                             Location="https://localhost:8080/auth/realms/TestRealm/protocol/saml" />
+                             Location="https://keycloak-cloudtrust-staging.openshift.elca-services.com/auth/realms/Cloudtrust/protocol/saml" />
         <KeyDescriptor use="signing">
             <dsig:KeyInfo>
-                <dsig:KeyName>_vdViLJcsLc_J17txWLnoU1v6X5nFUsLNjNpAFelXfs</dsig:KeyName>
+                <dsig:KeyName>lgYRm93EKXIn8CWUhgtyBYN6Krj2fQya8va1oYyfZi8</dsig:KeyName>
                 <dsig:X509Data>
-                    <dsig:X509Certificate>MIICvTCCAaUCBgFgB7JiNjANBgkqhkiG9w0BAQsFADAiMSAwHgYDVQQDDBdLZXljbG9ha1NoYXJlUG9pbnRSZWFsbTAeFw0xNzExMjkxMjExNTlaFw0yNzExMjkxMjEzMzlaMCIxIDAeBgNVBAMMF0tleWNsb2FrU2hhcmVQb2ludFJlYWxtMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlaaJFpb80DC3wZ0rhvJ9Anw+oTAIgs3iDqnTtmdJU3W+lOTVVm8QTbVdzNu4q+jII3f31uQXdaqzDBwO8TT+ukb95RoO//X5TH0a2JpaZwQDqqKwj+FyG6Xh8MjUHLdKdtEvxVG1vqMRm/iLAW50vvBps6d6AvMAYqqyIp6nUHJD7bWmBiwVWkSgEhfzld9NR1qEoaaOjQns9rgn+nXxOOOqUZMbiiaBu0U27JA5bBhBkNgagagZo+Y7KMd9C0N2IKicBJpCvv5vXShl+SnEE7zkAKgssBYrTU0UgH442MDRoi6zCBiO1aTQ9JrGiaMbAr9TuioGdX6hW2uZlEbgJwIDAQABMA0GCSqGSIb3DQEBCwUAA4IBAQBg3YtM2n403vX0P/C9WcbTvdw6RE+3u16o0pWvmTgFCanQ3vjpgL2FXg8ypQFCc+HlQVMqrMPHHSNoZ1IcRDu7SjPHUBq8umLd7tzKQkoNnbdXPRsT8a3eh4whotYdu7r56WqdKIYe4nlTsudFH2XXaCIB07WwtGmgq5dC+Ehc9tqb0Gn4qhgNhou9YgT8fZCX7yxteBl7ghkH+ErkPjTvDw6FH1mZnaubOKCq8Ja2rZJVArgouWlmSiZbNNMLGTkYLLeOK8e8ZYe16HwFeHB1y3xv/D99rBKrQmmrwO+eWFlp9Asylhj4kgvD/b0EjwBPZhcddyOr10nSTxi4wnnu</dsig:X509Certificate>
+                    <dsig:X509Certificate>MIICozCCAYsCBgFnocqUFjANBgkqhkiG9w0BAQsFADAVMRMwEQYDVQQDDApDbG91ZHRydXN0MB4XDTE4MTIxMjA5MzkyN1oXDTI4MTIxMjA5NDEwN1owFTETMBEGA1UEAwwKQ2xvdWR0cnVzdDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAJjiHQ4fW1hms71+szNbhbmIb0nqsyy3M6lEi5QbGBbk0Fg7JMn8nSCOFY0U8hTSWZg+utDWDG3VwX8BBSCUr/qSuW+bc0e+SRRzulH5m83v8gWzSFciiZ8aBuhsa0QqiduT3uYUb2+H+JGpm8BUaWVwiqqGXL9Qd/aK0zH2CB7ZWWbtTOs4ztozzw3cRrwMimG+x//4EsHFRxGRuHwpNpyelQO9WhJcIOPqXb9Tt6AtQdiCkxtnjiXhzTs6yQ1njPoA7Fo9lFe2HMm6NT9AUTg08aYmH+94nKHehlLqzBhIXRM0EUl/Ii1wKzwn/GHs9sYMAQJxxPF/53PlhEYazgcCAwEAATANBgkqhkiG9w0BAQsFAAOCAQEAStXATjaH0DVp4CCZLk2Gtqi/CuNsTowUvpBUO9T3OGgXlHVtMeqbTE7MGvtgiwXyKm3I9EV9pEKBZrDepW39wqf73PBEiIalGjx4sGiQh+nEa/kpMtRRiChNYWN/8Ig/yYdaZyGK5EVT5Occ0cn44g6foJSZke95oAocbSTV3/3oUdtjJMi0zTrbZvAsUcPkhMjpxM43VY4iNW7pGQhNMq9GhlMqfIPSwgmdkfaJPfhGB6hI/ytXURJ0X1X13KaIq4hI1qrTSt0vw6WKxDKlKWO+zxlCRCSsVQ9/w4Dh81RMVGwfGnBMNu7rIbvHB6cUaRC6LRIZeEVq0vVhPKx31g==</dsig:X509Certificate>
                 </dsig:X509Data>
             </dsig:KeyInfo>
         </KeyDescriptor>

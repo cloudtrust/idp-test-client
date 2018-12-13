@@ -26,12 +26,12 @@ import java.security.Principal;
  * Upon a get, it displays the user id used by the protocol, the claims that are recognised, and the raw token/profile
  */
 
-@WebServlet(
+/*@WebServlet(
         name = "TokenInfoServlet",
         displayName = "Token Information",
         description = "Gives the details of the token received",
         urlPatterns = {"/tokenInformation"}
-)
+)*/
 public class TokenInfoServlet extends HttpServlet {
 
     @Override
