@@ -37,7 +37,7 @@ import javax.servlet.Filter;
 public class SecurityConfig {
 
     /**
-     * This class contains the configuration of the access to the secured /tokenInformation servlet for both the
+     * This class contains the configuration of the access to the secured /secured controller for both the
      * fediz and pac4j libraries, and the logout filters for the fediz libraries
      */
     @Configuration
@@ -95,7 +95,7 @@ public class SecurityConfig {
 
         /**
          * Equivalent to the <sec:http> configuration element. Used to set the filter and secured/unsecured patterns.
-         * here set to match only the /tokenInformation/** endpoint.
+         * here set to match only the /secured/** endpoint.
          *
          * The configuration for the single sign-on for all protocols is set here, as well as the configuration for
          * the single logout for the WS-Fed protocol.
@@ -125,8 +125,8 @@ public class SecurityConfig {
                 http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.ALWAYS);
             }
 
-            http.antMatcher("/tokenInformation/**").authorizeRequests()
-                    .antMatchers("/tokenInformation/**").authenticated()
+            http.antMatcher("/secured/**").authorizeRequests()
+                    .antMatchers("/secured/**").authenticated()
                     .and()
                     .addFilterBefore(filter, BasicAuthenticationFilter.class);
         }
