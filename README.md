@@ -83,8 +83,8 @@ the application. For example, the path to a fediz configuration file can be spec
 ### Using the application
 
 After running, go to the address being listened to (by default `http://localhost:7000`). The first link on the page will 
-redirect to `http://localhost:7000/tokenInformation`, which is protected by IdP access. Once accessed, this page 
-contains information on the token provided by the IdP for verification purposes.
+redirect to `http://localhost:7000/secured`, which is protected by IdP access. Once accessed, one can view information 
+on the token provided by the IdP for verification purposes.
 
 It is also possible to to a single logout by using the second link on initial page, which by default is at 
 `http://localhost:7000/singleLogout`. For WS-Fed and SAML, this leads to a logout page after the automatic logout, but 

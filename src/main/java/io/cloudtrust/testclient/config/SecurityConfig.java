@@ -37,7 +37,7 @@ import javax.servlet.Filter;
 public class SecurityConfig {
 
     /**
-     * This class contains the configuration of the access to the secured /tokenInformation servlet for both the
+     * This class contains the configuration of the access to the secured /secured controller for both the
      * fediz and pac4j libraries, and the logout filters for the fediz libraries
      */
     @Configuration
@@ -95,7 +95,7 @@ public class SecurityConfig {
 
         /**
          * Equivalent to the <sec:http> configuration element. Used to set the filter and secured/unsecured patterns.
-         * here set to match only the /tokenInformation/** endpoint.
+         * here set to match only the /secured/** endpoint.
          *
          * The configuration for the single sign-on for all protocols is set here, as well as the configuration for
          * the single logout for the WS-Fed protocol.
@@ -125,8 +125,8 @@ public class SecurityConfig {
                 http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.ALWAYS);
             }
 
-            http.antMatcher("/tokenInformation/**").authorizeRequests()
-                    .antMatchers("/tokenInformation/**").authenticated()
+            http.antMatcher("/secured/**").authorizeRequests()
+                    .antMatchers("/secured/**").authenticated()
                     .and()
                     .addFilterBefore(filter, BasicAuthenticationFilter.class);
         }
@@ -140,10 +140,8 @@ public class SecurityConfig {
     @Order(2)
     public static class SingleLogoutConfig extends WebSecurityConfigurerAdapter {
 
-        @Value("${server.port}")
-        private String serverPort;
-        @Value("${server.address}")
-        private String serverAddress;
+        @Value("${connection.address:http://localhost:7000}")
+        private String connectionAddress;
         @Value("${connection.protocol:WSFED}")
         private String connectionProtocol;
 
@@ -172,13 +170,19 @@ public class SecurityConfig {
         protected void configure(final HttpSecurity http) throws Exception {
 
             boolean isWsFed = protocol == ProtocolType.WSFED;
-            String logoutPath= isWsFed?fedizConfig.getFedizContext().getLogoutURL():"/?defaulturlafterlogoutafteridp";
+            String logoutPath= isWsFed?fedizConfig.getFedizContext().getLogoutURL():"?defaulturlafterlogoutafteridp";
+            String logoutAddress=isWsFed?fedizConfig.getFedizContext().getAudienceUris().get(0):connectionAddress;
+            if (!logoutAddress.endsWith("/") && !logoutPath.startsWith("/")) {
+                logoutAddress += "/";
+            }
 
-            final LogoutFilter filter = new LogoutFilter(config, "http://" + serverAddress + ":" + serverPort + logoutPath);
+
+            final LogoutFilter filter = new LogoutFilter(config, logoutAddress + logoutPath);
             filter.setLocalLogout(!isWsFed);
             filter.setDestroySession(!isWsFed);
             filter.setCentralLogout(!isWsFed);
-            filter.setLogoutUrlPattern("http://" + serverAddress + ":" + serverPort + "/.*");
+            fedizConfig.getFedizContext().getAudienceUris().get(0);
+            filter.setLogoutUrlPattern(logoutAddress + ".*");
 
             http
                     .antMatcher("/singleLogout")
