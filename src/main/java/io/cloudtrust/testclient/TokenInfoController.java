@@ -9,11 +9,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.xml.transform.*;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.IOException;
@@ -25,22 +28,21 @@ import java.security.Principal;
 @Controller
 public class TokenInfoController {
 
-    @RequestMapping(value = "/", method = RequestMethod.GET)
+    @GetMapping(value = "/")
     public String home(Model model, HttpServletRequest req) {
         model.addAttribute("principal", req.getUserPrincipal());
         return "index";
     }
 
-    @RequestMapping(value = "/secured", method = RequestMethod.GET)
+    @GetMapping(value = "/secured")
     public String authenticated(Model model, HttpServletRequest req) {
-        Principal p = req.getUserPrincipal();
         model.addAttribute("principal", req.getUserPrincipal());
         model.addAttribute("tokenInfo", buildTokenInfo(req.getUserPrincipal()));
         return "index";
     }
 
     private String buildTokenInfo(Principal p) {
-        StringBuffer out = new StringBuffer();
+        StringBuilder out = new StringBuilder();
 
         if (p != null) {
             out.append("User\n" +
@@ -51,37 +53,37 @@ public class TokenInfoController {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth instanceof FederationAuthenticationToken) {
-            FederationAuthenticationToken fedAuthToken = (FederationAuthenticationToken)auth;
+            FederationAuthenticationToken fedAuthToken = (FederationAuthenticationToken) auth;
             out.append("Recognised claims:\n");
-            for (Claim claim : fedAuthToken.getClaims()){
+            for (Claim claim : fedAuthToken.getClaims()) {
                 if (claim.getValue() instanceof Iterable) {
-                    for (Object value : (Iterable)claim.getValue()) {
+                    for (Object value : (Iterable<?>) claim.getValue()) {
                         out.append("    " + claim.getClaimType() + ": " + value + "\n");
                     }
                 } else {
-                    out.append("    " + claim.getClaimType()+ ": " + claim.getValue() + "\n");
+                    out.append("    " + claim.getClaimType() + ": " + claim.getValue() + "\n");
                 }
             }
             out.append("\n");
 
             out.append("Raw token:\n");
             if (fedAuthToken.getCredentials() instanceof FedizRequest) {
-                FedizRequest fedReq = (FedizRequest)fedAuthToken.getCredentials();
+                FedizRequest fedReq = (FedizRequest) fedAuthToken.getCredentials();
                 try {
-                    out.append(formatXML(fedReq.getResponseToken())+ "\n");
+                    out.append(formatXML(fedReq.getResponseToken()) + "\n");
                 } catch (Exception ex) {
                     out.append("Failed to parse raw token: " + ex.toString() + "\n");
                 }
             } else {
                 out.append("Cannot get raw token\n");
             }
-        } else if (auth instanceof Pac4jAuthentication){
+        } else if (auth instanceof Pac4jAuthentication) {
             Pac4jAuthentication token = (Pac4jAuthentication) auth;
             out.append("Recognised claims:\n");
             if (token.getProfile() != null) {
                 for (String claim : token.getProfile().getAttributes().keySet()) {
                     if (token.getProfile().getAttribute(claim) instanceof Iterable) {
-                        for (Object value : (Iterable)token.getProfile().getAttribute(claim)){
+                        for (Object value : (Iterable<?>) token.getProfile().getAttribute(claim)) {
                             out.append("    " + claim + ": " + value + "\n");
                         }
                     } else {
@@ -102,13 +104,14 @@ public class TokenInfoController {
     /**
      * Function to pretty-print an XML String passed as the argument. Doesn't escape the result for displaying in a
      * webpage though, another function must be used for that.
+     *
      * @param xml A non-formatted XML String
      * @return The pretty-printed result
-     * @throws IOException Thrown if there's a problem creating the reader or writer
+     * @throws IOException          Thrown if there's a problem creating the reader or writer
      * @throws TransformerException Thrown if there's a problem parsing the XML
      */
     private String formatXML(String xml) throws IOException, TransformerException {
-        try(StringReader reader = new StringReader(xml); Writer writer = new StringWriter()) {
+        try (StringReader reader = new StringReader(xml); Writer writer = new StringWriter()) {
             Source input = new StreamSource(reader);
             StreamResult xmlOutput = new StreamResult(writer);
             TransformerFactory transformerFactory = new TransformerFactoryImpl();

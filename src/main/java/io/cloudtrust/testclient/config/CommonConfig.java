@@ -3,6 +3,7 @@ package io.cloudtrust.testclient.config;
 import com.nimbusds.oauth2.sdk.auth.ClientAuthenticationMethod;
 import io.cloudtrust.testclient.fediz.FederationConfigReader;
 import io.cloudtrust.testclient.pac4j.BetterSAML2Authenticator;
+import io.cloudtrust.testclient.pac4j.CustomAuthorizer;
 import org.apache.cxf.fediz.spring.authentication.FederationAuthenticationProvider;
 import org.apache.cxf.fediz.spring.authentication.GrantedAuthoritiesUserDetailsFederationService;
 import org.apache.cxf.fediz.spring.web.FederationAuthenticationEntryPoint;
@@ -14,6 +15,7 @@ import org.pac4j.core.client.Clients;
 import org.pac4j.core.config.Config;
 import org.pac4j.oidc.client.OidcClient;
 import org.pac4j.oidc.config.OidcConfiguration;
+import org.pac4j.oidc.profile.OidcProfile;
 import org.pac4j.saml.client.SAML2Client;
 import org.pac4j.saml.client.SAML2ClientConfiguration;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,7 +26,6 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.authentication.session.SessionFixationProtectionStrategy;
-import io.cloudtrust.testclient.pac4j.CustomAuthorizer;
 
 import java.io.File;
 
@@ -63,6 +64,7 @@ public class CommonConfig {
 
     /**
      * Creates the bean for the pac4j configuration
+     *
      * @return a pac4j configuration bean
      */
     @Bean
@@ -82,27 +84,31 @@ public class CommonConfig {
         oidcConfiguration.setClientId(oidcClientId);
         oidcConfiguration.setSecret(oidcSecret);
         oidcConfiguration.setClientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC);
-        final OidcClient oidcClient = new OidcClient(oidcConfiguration);
-        oidcClient.addAuthorizationGenerator((ctx, profile) -> { profile.addRole("ROLE_ADMIN"); return profile; });
+        final OidcClient<OidcProfile, OidcConfiguration> oidcClient = new OidcClient<>(oidcConfiguration);
+        oidcClient.addAuthorizationGenerator((ctx, profile) -> {
+            profile.addRole("ROLE_ADMIN");
+            return profile;
+        });
 
-        if (!connectionAddress.endsWith("/")){
+        if (!connectionAddress.endsWith("/")) {
             connectionAddress += "/";
         }
         final Clients clients = new Clients(connectionAddress + "callback", oidcClient, saml2Client);
 
 
         final Config config = new Config(clients);
-        config.addAuthorizer("admin", new RequireAnyRoleAuthorizer("ROLE_ADMIN"));
+        config.addAuthorizer("admin", new RequireAnyRoleAuthorizer<>("ROLE_ADMIN"));
         config.addAuthorizer("custom", customAuthorizer());
         return config;
     }
 
     /**
      * Creates the authorizer bean used by pac4j
+     *
      * @return
      */
     @Bean
-    public CustomAuthorizer customAuthorizer(){
+    public CustomAuthorizer customAuthorizer() {
         return new CustomAuthorizer();
     }
 
@@ -148,7 +154,7 @@ public class CommonConfig {
 
     /* --- Start of beans for fediz single logout configuration --- */
     @Bean
-    public FederationSignOutCleanupFilter federationSignOutCleanupFilter(){
+    public FederationSignOutCleanupFilter federationSignOutCleanupFilter() {
         return new FederationSignOutCleanupFilter();
     }
 

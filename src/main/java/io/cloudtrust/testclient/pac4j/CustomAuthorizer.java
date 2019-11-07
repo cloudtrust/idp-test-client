@@ -3,10 +3,7 @@ package io.cloudtrust.testclient.pac4j;
 import org.apache.commons.lang3.StringUtils;
 import org.pac4j.core.authorization.authorizer.ProfileAuthorizer;
 import org.pac4j.core.context.WebContext;
-import org.pac4j.core.exception.HttpAction;
 import org.pac4j.core.profile.CommonProfile;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 
@@ -20,7 +17,7 @@ public class CustomAuthorizer extends ProfileAuthorizer<CommonProfile> {
      * {@inheritDoc}
      */
     @Override
-    public boolean isAuthorized(final WebContext context, final List<CommonProfile> profiles) throws HttpAction {
+    public boolean isAuthorized(final WebContext context, final List<CommonProfile> profiles) {
         return isAnyAuthorized(context, profiles);
     }
 

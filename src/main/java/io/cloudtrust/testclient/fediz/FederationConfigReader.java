@@ -1,5 +1,6 @@
 package io.cloudtrust.testclient.fediz;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.fediz.core.config.FedizConfigurator;
 import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.spring.FederationConfig;
@@ -11,7 +12,9 @@ import org.springframework.util.Assert;
 import org.springframework.web.context.ServletContextAware;
 
 import javax.servlet.ServletContext;
+import javax.xml.bind.JAXBException;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
 
@@ -51,10 +54,9 @@ public class FederationConfigReader implements FederationConfig, ServletContextA
      */
     public void init() {
         Assert.notNull(getConfigFile(), "property 'configFile' mandatory");
-        try (InputStreamReader isr = new InputStreamReader(getConfigFile().getInputStream());
-             BufferedReader br = new BufferedReader(isr)) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(getConfigFile().getInputStream()))) {
             configurator.loadConfig(br);
-        } catch (Exception e) {
+        } catch (JAXBException | IOException e) {
             LOG.error("Failed to parse '" + getConfigFile().getDescription() + "'", e);
             throw new BeanCreationException("Failed to parse '" + getConfigFile().getDescription() + "'", e);
         }
@@ -62,6 +64,7 @@ public class FederationConfigReader implements FederationConfig, ServletContextA
 
     /**
      * Gets all configuration contexts, as it is possible to define a different configuration by context
+     *
      * @return a list of the context configurations
      */
     @Override
@@ -71,6 +74,7 @@ public class FederationConfigReader implements FederationConfig, ServletContextA
 
     /**
      * Gets a context by name. The name is the value in the <contextConfig name=VALUE> attribute
+     *
      * @param context the name of a context in the fediz configuration
      * @return an object representing the configuration of the fediz context
      */
@@ -78,8 +82,9 @@ public class FederationConfigReader implements FederationConfig, ServletContextA
     public FedizContext getFedizContext(String context) {
         FedizContext ctx = configurator.getFedizContext(context);
         if (ctx == null) {
-            LOG.error("Federation context '" + context + "' not found.");
-            throw new IllegalStateException("Federation context '" + context + "' not found.");
+            String message = "Federation context '" + context + "' not found.";
+            LOG.error(message);
+            throw new IllegalStateException(message);
         }
         initializeRelativePath(ctx);
         return ctx;
@@ -88,6 +93,7 @@ public class FederationConfigReader implements FederationConfig, ServletContextA
     /**
      * Initialises the relative path for a context to the value set during the initialisation of this bean
      * If none was set, tries to guess via the catalina or jetty configuration
+     *
      * @param ctx The context for which to set the relative path
      */
     private void initializeRelativePath(FedizContext ctx) {
@@ -96,13 +102,13 @@ public class FederationConfigReader implements FederationConfig, ServletContextA
         }
         if (ctx.getRelativePath() == null) {
             String catalinaBase = System.getProperty("catalina.base");
-            if (catalinaBase != null && catalinaBase.length() > 0) {
+            if (!StringUtils.isBlank(catalinaBase)) {
                 ctx.setRelativePath(catalinaBase);
             }
         }
         if (ctx.getRelativePath() == null) {
             String jettyHome = System.getProperty("jetty.home");
-            if (jettyHome != null && jettyHome.length() > 0) {
+            if (!StringUtils.isBlank(jettyHome)) {
                 ctx.setRelativePath(jettyHome);
             }
         }
@@ -111,6 +117,7 @@ public class FederationConfigReader implements FederationConfig, ServletContextA
     /**
      * Gets the current context from the servlet context (as the class is context aware). If this fails, can get an
      * assigned context.
+     *
      * @return The current context.
      */
     @Override

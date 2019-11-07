@@ -21,21 +21,22 @@ import java.util.Set;
 public final class BetterSAML2Authenticator extends SAML2Authenticator {
 
     public BetterSAML2Authenticator() {
-        super("userid", new HashMap());
+        super("userid", new HashMap<>());
     }
 
     /**
      * Validate the credentials. It should throw a {@link CredentialsException} in case of failure.
-     *
+     * <p>
      * Correctly handles SAML assertions which have the same name
      *
      * @param credentials the given credentials
-     * @param context the web context
-     * @throws HttpAction requires a specific HTTP action if necessary
+     * @param context     the web context
+     * @throws HttpAction           requires a specific HTTP action if necessary
      * @throws CredentialsException the credentials are invalid
      */
+    @SuppressWarnings("unchecked")
     @Override
-    public void validate(final SAML2Credentials credentials, final WebContext context) throws HttpAction, CredentialsException {
+    public void validate(final SAML2Credentials credentials, final WebContext context) {
         init();
 
         final SAML2Profile profile = getProfileDefinition().newProfile();
@@ -50,14 +51,10 @@ public final class BetterSAML2Authenticator extends SAML2Authenticator {
             final String name = attribute.getName();
             final String friendlyName = attribute.getFriendlyName();
 
-            final String keyName = CommonHelper.isNotBlank(friendlyName)?friendlyName:name;
+            final String keyName = CommonHelper.isNotBlank(friendlyName) ? friendlyName : name;
 
-            if (!attributes.containsKey(keyName)){
-                attributes.put(keyName, new HashSet<String>());
-            }
-            for (final String attributeValue : attribute.getAttributeValues()) {
-                ((Set<String>)attributes.get(keyName)).add(attributeValue);
-            }
+            Set<String> a = (Set<String>) attributes.computeIfAbsent(keyName, k -> new HashSet<String>());
+            a.addAll(attribute.getAttributeValues());
         }
         getProfileDefinition().convertAndAdd(profile, attributes, null);
 
