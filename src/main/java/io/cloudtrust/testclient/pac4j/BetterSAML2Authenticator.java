@@ -2,7 +2,6 @@ package io.cloudtrust.testclient.pac4j;
 
 import org.pac4j.core.context.WebContext;
 import org.pac4j.core.exception.CredentialsException;
-import org.pac4j.core.exception.HttpAction;
 import org.pac4j.core.util.CommonHelper;
 import org.pac4j.saml.credentials.SAML2Credentials;
 import org.pac4j.saml.credentials.authenticator.SAML2Authenticator;
@@ -31,7 +30,6 @@ public final class BetterSAML2Authenticator extends SAML2Authenticator {
      *
      * @param credentials the given credentials
      * @param context     the web context
-     * @throws HttpAction           requires a specific HTTP action if necessary
      * @throws CredentialsException the credentials are invalid
      */
     @SuppressWarnings("unchecked")
@@ -65,6 +63,7 @@ public final class BetterSAML2Authenticator extends SAML2Authenticator {
             profile.addAttribute(SAML_CONDITION_NOT_ON_OR_AFTER_ATTRIBUTE, conditions.getNotOnOrAfter());
         }
 
+        profile.addAuthenticationAttribute(SESSION_INDEX, credentials.getSessionIndex());
         credentials.setUserProfile(profile);
     }
 }

@@ -13,10 +13,10 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <pac4j.version>3.8.2</pac4j.version>
+        <pac4j.version>3.8.3</pac4j.version>
         <pacj4jsec.version>4.1.0</pacj4jsec.version>
-        <springboot.version>2.1.6.RELEASE</springboot.version>
-        <spring.version>5.1.8.RELEASE</spring.version>
+        <springboot.version>2.2.5.RELEASE</springboot.version>
+        <spring.version>5.2.6.RELEASE</spring.version>
         <fedizspring.version>1.4.5</fedizspring.version>
         <apache-commons-text.version>1.6</apache-commons-text.version>
         <javax-xml-bind.version>2.3.1</javax-xml-bind.version>
@@ -28,6 +28,13 @@
             <artifactId>spring-core</artifactId>
             <version>${spring.version}</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.springframework/spring-tx -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+            <version>5.2.6.RELEASE</version>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
@@ -52,6 +59,11 @@
             <groupId>org.pac4j</groupId>
             <artifactId>spring-security-pac4j</artifactId>
             <version>${pacj4jsec.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.pac4j</groupId>
+            <artifactId>pac4j-core</artifactId>
+            <version>${pac4j.version}</version>
         </dependency>
         <dependency>
             <groupId>org.pac4j</groupId>
