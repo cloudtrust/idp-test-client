@@ -20,6 +20,11 @@
         <fedizspring.version>1.4.5</fedizspring.version>
         <apache-commons-text.version>1.9</apache-commons-text.version>
         <javax-xml-bind.version>2.3.1</javax-xml-bind.version>
+        <version.pmd.plugin>3.13.0</version.pmd.plugin>
+        <spotbugs.version>4.0.0</spotbugs.version>
+        <fb-contrib.version>7.4.7</fb-contrib.version>
+        <findsecbugs.version>1.10.1</findsecbugs.version>
+        <owasp-check.version>5.3.1</owasp-check.version>
     </properties>
 
     <dependencies>
@@ -100,6 +105,40 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>${spotbugs.version}</version>
+                <configuration>
+                    <effort>Max</effort>
+                    <threshold>Low</threshold>
+                    <plugins>
+                        <plugin>
+                            <groupId>com.mebigfatguy.fb-contrib</groupId>
+                            <artifactId>fb-contrib</artifactId>
+                            <version>${fb-contrib.version}</version>
+                        </plugin>
+                        <plugin>
+                            <groupId>com.h3xstream.findsecbugs</groupId>
+                            <artifactId>findsecbugs-plugin</artifactId>
+                            <version>${findsecbugs.version}</version>
+                        </plugin>
+                    </plugins>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>${owasp-check.version}</version>
+                <configuration>
+                    <format>XML</format>
+                    <failOnError>false</failOnError>
+                </configuration>
             </plugin>
         </plugins>
     </build>
