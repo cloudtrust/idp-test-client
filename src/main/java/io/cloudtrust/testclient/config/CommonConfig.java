@@ -4,20 +4,22 @@ import com.nimbusds.oauth2.sdk.auth.ClientAuthenticationMethod;
 import io.cloudtrust.testclient.fediz.FederationConfigReader;
 import io.cloudtrust.testclient.pac4j.BetterSAML2Authenticator;
 import io.cloudtrust.testclient.pac4j.CustomAuthorizer;
+import io.cloudtrust.testclient.pac4j.CustomSAML2Client;
+import io.cloudtrust.testclient.saml.SamlResponseBindingType;
 import org.apache.cxf.fediz.spring.authentication.FederationAuthenticationProvider;
 import org.apache.cxf.fediz.spring.authentication.GrantedAuthoritiesUserDetailsFederationService;
 import org.apache.cxf.fediz.spring.web.FederationAuthenticationEntryPoint;
 import org.apache.cxf.fediz.spring.web.FederationLogoutFilter;
 import org.apache.cxf.fediz.spring.web.FederationLogoutSuccessHandler;
 import org.apache.cxf.fediz.spring.web.FederationSignOutCleanupFilter;
+import org.opensaml.saml.common.xml.SAMLConstants;
 import org.pac4j.core.authorization.authorizer.RequireAnyRoleAuthorizer;
 import org.pac4j.core.client.Clients;
 import org.pac4j.core.config.Config;
 import org.pac4j.oidc.client.OidcClient;
 import org.pac4j.oidc.config.OidcConfiguration;
-import org.pac4j.oidc.profile.OidcProfile;
 import org.pac4j.saml.client.SAML2Client;
-import org.pac4j.saml.client.SAML2ClientConfiguration;
+import org.pac4j.saml.config.SAML2Configuration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,6 +30,7 @@ import org.springframework.security.web.authentication.logout.SecurityContextLog
 import org.springframework.security.web.authentication.session.SessionFixationProtectionStrategy;
 
 import java.io.File;
+import java.util.Optional;
 
 /**
  * Common spring configuration for beans required for the fediz and Pac4j libraries, using annotations rather than
@@ -53,6 +56,8 @@ public class CommonConfig {
     private String samlPrivateKeyPassword;
     @Value("${saml.identityProviderMetadataPath:resource:SAMLIDP.xml}")
     private String samlIdentityProviderMetadataPath;
+    @Value("${saml.responseBindingType:ARTIFACT}")
+    private SamlResponseBindingType samlResponseBindingType;
 
 
     @Value("${oidc.uri:http://localhost:8080/realms/TestRealm/.well-known/openid-configuration}")
@@ -69,14 +74,27 @@ public class CommonConfig {
      */
     @Bean
     public Config config() {
-        final SAML2ClientConfiguration cfg = new SAML2ClientConfiguration(samlKeystorePath,
+        final SAML2Configuration cfg = new SAML2Configuration(samlKeystorePath,
                 samlKeystorePassword,
                 samlPrivateKeyPassword,
                 samlIdentityProviderMetadataPath);
         cfg.setMaximumAuthenticationLifetime(3600);
         cfg.setServiceProviderEntityId(samlEntityId);
         cfg.setServiceProviderMetadataPath(new File("samlSPMetadata.xml").getAbsolutePath());
-        final SAML2Client saml2Client = new SAML2Client(cfg);
+        cfg.setAuthnRequestSigned(true);
+        cfg.setSpLogoutRequestSigned(true);
+        switch (samlResponseBindingType) {
+            case ARTIFACT:
+                cfg.setResponseBindingType(SAMLConstants.SAML2_ARTIFACT_BINDING_URI);
+                break;
+            case POST:
+                cfg.setResponseBindingType(SAMLConstants.SAML2_POST_BINDING_URI);
+                break;
+            case REDIRECT:
+                cfg.setResponseBindingType(SAMLConstants.SAML2_REDIRECT_BINDING_URI);
+                break;
+        }
+        final SAML2Client saml2Client = new CustomSAML2Client(cfg);
         saml2Client.setAuthenticator(new BetterSAML2Authenticator());
 
         final OidcConfiguration oidcConfiguration = new OidcConfiguration();
@@ -84,10 +102,10 @@ public class CommonConfig {
         oidcConfiguration.setClientId(oidcClientId);
         oidcConfiguration.setSecret(oidcSecret);
         oidcConfiguration.setClientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC);
-        final OidcClient<OidcProfile, OidcConfiguration> oidcClient = new OidcClient<>(oidcConfiguration);
-        oidcClient.addAuthorizationGenerator((ctx, profile) -> {
+        final OidcClient oidcClient = new OidcClient(oidcConfiguration);
+        oidcClient.addAuthorizationGenerator((ctx, session, profile) -> {
             profile.addRole("ROLE_ADMIN");
-            return profile;
+            return Optional.of(profile);
         });
 
         if (!connectionAddress.endsWith("/")) {
@@ -97,7 +115,7 @@ public class CommonConfig {
 
 
         final Config config = new Config(clients);
-        config.addAuthorizer("admin", new RequireAnyRoleAuthorizer<>("ROLE_ADMIN"));
+        config.addAuthorizer("admin", new RequireAnyRoleAuthorizer("ROLE_ADMIN"));
         config.addAuthorizer("custom", customAuthorizer());
         return config;
     }

@@ -1,10 +1,11 @@
 package io.cloudtrust.testclient;
 
-import com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl;
+import io.cloudtrust.testclient.saml.SamlResponseBindingType;
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.processor.FedizRequest;
 import org.apache.cxf.fediz.spring.authentication.FederationAuthenticationToken;
 import org.pac4j.springframework.security.authentication.Pac4jAuthentication;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -27,6 +28,9 @@ import java.security.Principal;
 
 @Controller
 public class TokenInfoController {
+
+    @Value("${saml.responseBindingType:ARTIFACT}")
+    private SamlResponseBindingType samlResponseBindingType;
 
     @GetMapping(value = "/")
     public String home(Model model, HttpServletRequest req) {
@@ -52,6 +56,7 @@ public class TokenInfoController {
         }
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        auth.getCredentials();
         if (auth instanceof FederationAuthenticationToken) {
             FederationAuthenticationToken fedAuthToken = (FederationAuthenticationToken) auth;
             out.append("Recognised claims:\n");
@@ -93,7 +98,15 @@ public class TokenInfoController {
             }
             out.append("\n");
             out.append("Saved profile:\n");
-            out.append(token + "\n");
+            out.append(token + "\n\n");
+            if (samlResponseBindingType == SamlResponseBindingType.ARTIFACT) {
+                out.append("Formatted token (obtained through artifact binding):\n");
+                if (token.getProfile().getAttribute("saml_assertion") != null) {
+                    out.append("  " + formatXML((String) token.getProfile().getAttribute("saml_assertion")));
+                } else {
+                    out.append("  <token not found>");
+                }
+            }
         } else {
             out.append("Cannot get token information from Spring Security Context\n");
         }
@@ -107,14 +120,12 @@ public class TokenInfoController {
      *
      * @param xml A non-formatted XML String
      * @return The pretty-printed result
-     * @throws IOException          Thrown if there's a problem creating the reader or writer
-     * @throws TransformerException Thrown if there's a problem parsing the XML
      */
-    private String formatXML(String xml) throws IOException, TransformerException {
+    private String formatXML(String xml) {
         try (StringReader reader = new StringReader(xml); Writer writer = new StringWriter()) {
             Source input = new StreamSource(reader);
             StreamResult xmlOutput = new StreamResult(writer);
-            TransformerFactory transformerFactory = new TransformerFactoryImpl();
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
             transformerFactory.setAttribute("indent-number", 2);
             Transformer transformer = transformerFactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
@@ -123,6 +134,9 @@ public class TokenInfoController {
             String str = xmlOutput.getWriter().toString();
             str = str.replaceAll(" ", "  ");
             return str;
+        } catch (IOException | TransformerException e) {
+            e.printStackTrace();
+            return "<Error while formatting XML>";
         }
     }
 }

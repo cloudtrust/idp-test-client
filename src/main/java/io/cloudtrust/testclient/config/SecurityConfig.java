@@ -62,13 +62,14 @@ public class SecurityConfig {
         private FederationSignOutCleanupFilter federationSignOutCleanupFilter;
 
         @PostConstruct
-        public void init(){
+        public void init() {
             protocol = ProtocolType.valueFrom(connectionProtocol);
         }
 
         /**
          * Creates the fediz filter bean
-         * @return  the fediz filter bean
+         *
+         * @return the fediz filter bean
          * @throws Exception
          */
         @Bean
@@ -81,6 +82,7 @@ public class SecurityConfig {
 
         /**
          * Equivalent the <sec:authentication-manager> configuration element. Only necessary for fediz.
+         *
          * @param auth the {@link AuthenticationManagerBuilder} to use
          * @throws Exception required by overwritten method signature
          */
@@ -96,7 +98,7 @@ public class SecurityConfig {
         /**
          * Equivalent to the <sec:http> configuration element. Used to set the filter and secured/unsecured patterns.
          * here set to match only the /secured/** endpoint.
-         *
+         * <p>
          * The configuration for the single sign-on for all protocols is set here, as well as the configuration for
          * the single logout for the WS-Fed protocol.
          *
@@ -107,11 +109,14 @@ public class SecurityConfig {
         protected void configure(HttpSecurity http) throws Exception {
 
             final CallbackFilter callbackFilter = new CallbackFilter(config);
-            callbackFilter.setMultiProfile(true);
             Filter filter = federationFilter();
-            switch(protocol) {
-                case OIDC: filter = new SecurityFilter(config, "oidcClient"); break;
-                case SAML: filter = new SecurityFilter(config, "Saml2Client"); break;
+            switch (protocol) {
+                case OIDC:
+                    filter = new SecurityFilter(config, "oidcClient");
+                    break;
+                case SAML:
+                    filter = new SecurityFilter(config, "CustomSaml2Client");
+                    break;
             }
 
             if (protocol.equals(ProtocolType.WSFED)) {
@@ -153,14 +158,14 @@ public class SecurityConfig {
         private ProtocolType protocol;
 
         @PostConstruct
-        public void init(){
+        public void init() {
             protocol = ProtocolType.valueFrom(connectionProtocol);
         }
 
         /**
          * Equivalent to the <sec:http> configuration element. Used to set the filter and secured/unsecured patterns.
          * here set to match only the /singleSignout endpoint.
-         *
+         * <p>
          * Configures only the pac4j logout element. For ws-fed, this only redirects to the ws-fed single logout
          * endpoint.
          *
@@ -170,8 +175,8 @@ public class SecurityConfig {
         protected void configure(final HttpSecurity http) throws Exception {
 
             boolean isWsFed = protocol == ProtocolType.WSFED;
-            String logoutPath= isWsFed?fedizConfig.getFedizContext().getLogoutURL():"?defaulturlafterlogoutafteridp";
-            String logoutAddress=isWsFed?fedizConfig.getFedizContext().getAudienceUris().get(0):connectionAddress;
+            String logoutPath = isWsFed ? fedizConfig.getFedizContext().getLogoutURL() : "?defaulturlafterlogoutafteridp";
+            String logoutAddress = isWsFed ? fedizConfig.getFedizContext().getAudienceUris().get(0) : connectionAddress;
             if (!logoutAddress.endsWith("/") && !logoutPath.startsWith("/")) {
                 logoutAddress += "/";
             }
@@ -205,7 +210,7 @@ public class SecurityConfig {
         /**
          * Equivalent to the <sec:http> configuration element. Used to set the filter and secured/unsecured patterns.
          * here set to match all other requests
-         *
+         * <p>
          * The configuration of the callback filter for pac4j is set done here, as well as the standard logic for
          * a spring security logout.
          *
@@ -215,7 +220,6 @@ public class SecurityConfig {
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             final CallbackFilter callbackFilter = new CallbackFilter(config);
-            callbackFilter.setMultiProfile(true);
 
             http.authorizeRequests()
                     .anyRequest().permitAll()

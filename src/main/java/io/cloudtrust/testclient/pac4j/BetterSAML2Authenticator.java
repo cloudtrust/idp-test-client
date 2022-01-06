@@ -1,6 +1,8 @@
 package io.cloudtrust.testclient.pac4j;
 
 import org.pac4j.core.context.WebContext;
+import org.pac4j.core.context.session.SessionStore;
+import org.pac4j.core.credentials.Credentials;
 import org.pac4j.core.exception.CredentialsException;
 import org.pac4j.core.util.CommonHelper;
 import org.pac4j.saml.credentials.SAML2Credentials;
@@ -28,16 +30,17 @@ public final class BetterSAML2Authenticator extends SAML2Authenticator {
      * <p>
      * Correctly handles SAML assertions which have the same name
      *
-     * @param credentials the given credentials
-     * @param context     the web context
+     * @param cred    the given credentials
+     * @param context the web context
      * @throws CredentialsException the credentials are invalid
      */
     @SuppressWarnings("unchecked")
     @Override
-    public void validate(final SAML2Credentials credentials, final WebContext context) {
+    public void validate(final Credentials cred, final WebContext context, final SessionStore sessionStore) {
         init();
 
-        final SAML2Profile profile = getProfileDefinition().newProfile();
+        final SAML2Credentials credentials = (SAML2Credentials) cred;
+        final SAML2Profile profile = (SAML2Profile) getProfileDefinition().newProfile();
         profile.setId(credentials.getNameId().getValue());
         profile.addAttribute(SESSION_INDEX, credentials.getSessionIndex());
 
@@ -64,6 +67,9 @@ public final class BetterSAML2Authenticator extends SAML2Authenticator {
         }
 
         profile.addAuthenticationAttribute(SESSION_INDEX, credentials.getSessionIndex());
+        if (context.getResponseHeader("saml_assertion").isPresent()) {
+            profile.addAttribute("saml_assertion", context.getResponseHeader("saml_assertion").get());
+        }
         credentials.setUserProfile(profile);
     }
 }
