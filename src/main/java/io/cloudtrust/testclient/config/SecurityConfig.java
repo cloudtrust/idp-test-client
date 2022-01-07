@@ -25,7 +25,6 @@ import org.springframework.security.web.authentication.preauth.j2ee.J2eePreAuthe
 import org.springframework.security.web.authentication.session.SessionFixationProtectionStrategy;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
-import javax.annotation.PostConstruct;
 import javax.servlet.Filter;
 
 /**
@@ -44,7 +43,6 @@ public class SecurityConfig {
     @Order(1)
     protected static class ProtocolSecurityConfig extends WebSecurityConfigurerAdapter {
         @Value("${connection.protocol:WSFED}")
-        private String connectionProtocol;
         private ProtocolType protocol;
 
         @Autowired
@@ -60,11 +58,6 @@ public class SecurityConfig {
         private FederationLogoutFilter logoutFilter;
         @Autowired
         private FederationSignOutCleanupFilter federationSignOutCleanupFilter;
-
-        @PostConstruct
-        public void init() {
-            protocol = ProtocolType.valueFrom(connectionProtocol);
-        }
 
         /**
          * Creates the fediz filter bean
@@ -88,7 +81,7 @@ public class SecurityConfig {
          */
         @Override
         protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-            if (protocol.equals(ProtocolType.WSFED)) {
+            if (protocol == ProtocolType.WSFED) {
                 auth.authenticationProvider(federationAuthProvider);
             } else {
                 super.configure(auth);
@@ -119,7 +112,7 @@ public class SecurityConfig {
                     break;
             }
 
-            if (protocol.equals(ProtocolType.WSFED)) {
+            if (protocol == ProtocolType.WSFED) {
                 http.exceptionHandling().authenticationEntryPoint(federationEntryPoint)
                         .and()
                         .sessionManagement().sessionAuthenticationStrategy(sas)
@@ -156,11 +149,6 @@ public class SecurityConfig {
         private FederationConfigReader fedizConfig;
 
         private ProtocolType protocol;
-
-        @PostConstruct
-        public void init() {
-            protocol = ProtocolType.valueFrom(connectionProtocol);
-        }
 
         /**
          * Equivalent to the <sec:http> configuration element. Used to set the filter and secured/unsecured patterns.

@@ -5,12 +5,4 @@ package io.cloudtrust.testclient.config;
  */
 public enum ProtocolType {
     WSFED, OIDC, SAML;
-
-    public static ProtocolType valueFrom(String value) {
-        try {
-            return ProtocolType.valueOf(value);
-        } catch (Exception e) {
-            return WSFED;
-        }
-    }
 }

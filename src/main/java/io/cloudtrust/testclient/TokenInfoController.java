@@ -1,9 +1,16 @@
 package io.cloudtrust.testclient;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
+import com.nimbusds.oauth2.sdk.token.RefreshToken;
+import io.cloudtrust.testclient.config.ProtocolType;
 import io.cloudtrust.testclient.saml.SamlResponseBindingType;
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.processor.FedizRequest;
 import org.apache.cxf.fediz.spring.authentication.FederationAuthenticationToken;
+import org.pac4j.core.profile.UserProfile;
 import org.pac4j.springframework.security.authentication.Pac4jAuthentication;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -25,10 +32,13 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.security.Principal;
+import java.util.Base64;
 
 @Controller
 public class TokenInfoController {
 
+    @Value("${connection.protocol:WSFED}")
+    private ProtocolType protocol;
     @Value("${saml.responseBindingType:ARTIFACT}")
     private SamlResponseBindingType samlResponseBindingType;
 
@@ -84,27 +94,57 @@ public class TokenInfoController {
             }
         } else if (auth instanceof Pac4jAuthentication) {
             Pac4jAuthentication token = (Pac4jAuthentication) auth;
+            UserProfile profile = token.getProfile();
             out.append("Recognised claims:\n");
-            if (token.getProfile() != null) {
-                for (String claim : token.getProfile().getAttributes().keySet()) {
-                    if (token.getProfile().getAttribute(claim) instanceof Iterable) {
-                        for (Object value : (Iterable<?>) token.getProfile().getAttribute(claim)) {
+            if (profile != null) {
+                for (String claim : profile.getAttributes().keySet()) {
+                    if (profile.getAttribute(claim) instanceof Iterable) {
+                        for (Object value : (Iterable<?>) profile.getAttribute(claim)) {
                             out.append("    " + claim + ": " + value + "\n");
                         }
                     } else {
-                        out.append("    " + claim + ": " + token.getProfile().getAttribute(claim) + "\n");
+                        out.append("    " + claim + ": " + profile.getAttribute(claim) + "\n");
                     }
                 }
             }
             out.append("\n");
             out.append("Saved profile:\n");
             out.append(token + "\n\n");
-            if (samlResponseBindingType == SamlResponseBindingType.ARTIFACT) {
-                out.append("Formatted token (obtained through artifact binding):\n");
-                if (token.getProfile().getAttribute("saml_assertion") != null) {
-                    out.append("  " + formatXML((String) token.getProfile().getAttribute("saml_assertion")));
-                } else {
-                    out.append("  <token not found>");
+            if (profile != null) {
+                if (protocol == ProtocolType.SAML && samlResponseBindingType == SamlResponseBindingType.ARTIFACT) {
+                    out.append("Formatted token (obtained through artifact binding):\n");
+                    if (profile.getAttribute("saml_assertion") != null) {
+                        out.append("  " + formatXML((String) profile.getAttribute("saml_assertion")));
+                    } else {
+                        out.append("  <token not found>");
+                    }
+                } else if (protocol == ProtocolType.OIDC) {
+                    out.append("Access token:\n");
+                    // access token
+                    BearerAccessToken accessToken = (BearerAccessToken) profile.getAttribute("access_token");
+                    if (accessToken != null) {
+                        insertParsedJwt(out, accessToken.getValue());
+                    } else {
+                        out.append("  <access token not found>");
+                    }
+                    // refresh token
+                    out.append("\n\nRefresh token:\n");
+                    // access token
+                    RefreshToken refreshToken = (RefreshToken) profile.getAttribute("refresh_token");
+                    if (refreshToken != null) {
+                        insertParsedJwt(out, refreshToken.getValue());
+                    } else {
+                        out.append("  <refresh token not found>");
+                    }
+                    // ID token
+                    out.append("\n\nID token:\n");
+                    // access token
+                    String idToken = (String) profile.getAttribute("id_token");
+                    if (idToken != null) {
+                        insertParsedJwt(out, idToken);
+                    } else {
+                        out.append("  <ID token not found>");
+                    }
                 }
             }
         } else {
@@ -137,6 +177,24 @@ public class TokenInfoController {
         } catch (IOException | TransformerException e) {
             e.printStackTrace();
             return "<Error while formatting XML>";
+        }
+    }
+
+    private void insertParsedJwt(StringBuilder out, String jwt) {
+        try {
+            Base64.Decoder decoder = Base64.getUrlDecoder();
+            ObjectMapper mapper = new ObjectMapper();
+            String[] chunks = jwt.split("\\.");
+            String header = new String(decoder.decode(chunks[0]));
+            String payload = new String(decoder.decode(chunks[1]));
+            JsonNode headerMap = mapper.readTree(header);
+            JsonNode payloadMap = mapper.readTree(payload);
+
+            out.append("  Header:\n" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(headerMap));
+            out.append("\n  Payload:\n" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(payloadMap));
+        } catch (JsonProcessingException ex) {
+            ex.printStackTrace();
+            out.append("  <error while parsing jwt>");
         }
     }
 }
