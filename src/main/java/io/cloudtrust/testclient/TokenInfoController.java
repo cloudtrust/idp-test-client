@@ -7,11 +7,13 @@ import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
 import com.nimbusds.oauth2.sdk.token.RefreshToken;
 import io.cloudtrust.testclient.config.ProtocolType;
 import io.cloudtrust.testclient.saml.SamlResponseBindingType;
+import io.cloudtrust.testclient.saml.StsClient;
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.processor.FedizRequest;
 import org.apache.cxf.fediz.spring.authentication.FederationAuthenticationToken;
 import org.pac4j.core.profile.UserProfile;
 import org.pac4j.springframework.security.authentication.Pac4jAuthentication;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,6 +22,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -42,6 +45,9 @@ public class TokenInfoController {
     @Value("${saml.responseBindingType:ARTIFACT}")
     private SamlResponseBindingType samlResponseBindingType;
 
+    @Autowired
+    private StsClient stsCLient;
+
     @GetMapping(value = "/")
     public String home(Model model, HttpServletRequest req) {
         model.addAttribute("principal", req.getUserPrincipal());
@@ -51,11 +57,19 @@ public class TokenInfoController {
     @GetMapping(value = "/secured")
     public String authenticated(Model model, HttpServletRequest req) {
         model.addAttribute("principal", req.getUserPrincipal());
-        model.addAttribute("tokenInfo", buildTokenInfo(req.getUserPrincipal()));
+        model.addAttribute("tokenInfo", buildTokenInfo(req.getUserPrincipal(), req.getSession()));
+        model.addAttribute("samlArtifactBinding", protocol == ProtocolType.SAML && samlResponseBindingType == SamlResponseBindingType.ARTIFACT);
         return "index";
     }
 
-    private String buildTokenInfo(Principal p) {
+    @GetMapping(value = "/samlRenew")
+    public String renewAssertion(Model model, HttpServletRequest req) throws Exception {
+        String newAssertion = stsCLient.renewAssertion((String) req.getSession().getAttribute("saml_assertion"));
+        req.getSession().setAttribute("saml_assertion", newAssertion);
+        return authenticated(model, req);
+    }
+
+    private String buildTokenInfo(Principal p, HttpSession session) {
         StringBuilder out = new StringBuilder();
 
         if (p != null) {
@@ -112,12 +126,22 @@ public class TokenInfoController {
             out.append(token + "\n\n");
             if (profile != null) {
                 if (protocol == ProtocolType.SAML && samlResponseBindingType == SamlResponseBindingType.ARTIFACT) {
-                    out.append("Formatted token (obtained through artifact binding):\n");
-                    if (profile.getAttribute("saml_assertion") != null) {
-                        out.append("  " + formatXML((String) profile.getAttribute("saml_assertion")));
+                    out.append("Formatted token:\n");
+                    String assertionStr;
+                    String assertionFromSession = (String) session.getAttribute("saml_assertion");
+                    String assertionFromProfile = (String) profile.getAttribute("saml_assertion");
+                    if (assertionFromSession != null) {
+                        // assertion from the session
+                        assertionStr = formatXML(assertionFromSession);
+                    } else if (assertionFromProfile != null) {
+                        // assertion from the profile
+                        session.setAttribute("saml_assertion", assertionFromProfile);
+                        assertionStr = formatXML(assertionFromProfile);
                     } else {
-                        out.append("  <token not found>");
+                        // no assertion found
+                        assertionStr = "<token not found>";
                     }
+                    out.append("  " + assertionStr);
                 } else if (protocol == ProtocolType.OIDC) {
                     out.append("Access token:\n");
                     // access token

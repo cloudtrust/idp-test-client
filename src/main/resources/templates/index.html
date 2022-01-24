@@ -12,6 +12,26 @@
 		<link rel="stylesheet" href="assets/css/main.css" />
 	</head>
 	<body>
+		<script>
+			function renewSaml() {
+				document.getElementById("renewSamlButton").disabled = true;
+				document.getElementById("renewSamlButton").style.cursor = "progress";
+				var xhr = new XMLHttpRequest();
+				xhr.open("get", "/samlRenew", true);
+				xhr.onreadystatechange = function() {
+					if (xhr.readyState === 4) {
+						if (xhr.status === 200) {
+							location.reload();
+						} else {
+							alert("SAML renewal failed");
+							document.getElementById("renewSamlButton").disabled = false;
+							document.getElementById("renewSamlButton").style.cursor = "auto";
+						}
+					}
+				}
+				xhr.send();
+			}
+		</script>
 
 		<!-- Header -->
 			<header id="header">
@@ -68,6 +88,7 @@
 				<div class="flex flex-1">
 					<header>
 						<h3>TOKEN INFORMATION</h3>
+						<button id="renewSamlButton" type="button" style="background-color: white;" onclick="renewSaml()" th:if="${samlArtifactBinding}">Renew assertion</button>
 					</header>
 					<p><span style="white-space: pre; word-break: break-all;" th:if="${tokenInfo != null}" th:text="${tokenInfo}"></span></p>
 				</div>
