@@ -32,10 +32,12 @@ public class CustomSAML2CredentialsExtractor extends SAML2CredentialsExtractor {
         // CUSTOM:
         try {
             Assertion assertion = samlContext.getSubjectAssertion();
-            AssertionMarshaller marshaller = new AssertionMarshaller();
-            Element plaintextElement = marshaller.marshall(assertion);
-            String originalAssertionString = xmlToString(plaintextElement);
-            context.setResponseHeader("saml_assertion", originalAssertionString);
+            if (assertion != null) {
+                AssertionMarshaller marshaller = new AssertionMarshaller();
+                Element plaintextElement = marshaller.marshall(assertion);
+                String originalAssertionString = xmlToString(plaintextElement);
+                context.setResponseHeader("saml_assertion", originalAssertionString);
+            }
         } catch (MarshallingException | TransformerException e) {
             System.err.println("Unexpected issue while marshalling the assertion to String");
             e.printStackTrace();
