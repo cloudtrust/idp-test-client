@@ -16,7 +16,7 @@
         <pac4j.version>5.2.1</pac4j.version>
         <pacj4jsec.version>6.1.0</pacj4jsec.version>
         <springboot.version>2.6.1</springboot.version>
-        <spring.version>5.3.14</spring.version>
+        <spring.version>5.3.18</spring.version>
         <fedizspring.version>1.5.1</fedizspring.version>
         <apache-commons-text.version>1.9</apache-commons-text.version>
         <javax-xml-bind.version>2.3.1</javax-xml-bind.version>
