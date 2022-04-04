@@ -1,27 +1,38 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<EntityDescriptor entityID="https://keycloak-cloudtrust-staging.openshift.elca-services.com/auth/realms/Cloudtrust"
-                  xmlns="urn:oasis:names:tc:SAML:2.0:metadata"
-                  xmlns:dsig="http://www.w3.org/2000/09/xmldsig#"
-                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <IDPSSODescriptor WantAuthnRequestsSigned="false"
-                      protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
-        <SingleLogoutService
-                Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
-                Location="https://keycloak-cloudtrust-staging.openshift.elca-services.com/auth/realms/Cloudtrust/protocol/saml" />
-        <NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:persistent</NameIDFormat>
-        <NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</NameIDFormat>
-        <NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</NameIDFormat>
-        <NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress</NameIDFormat>
-
-        <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
-                             Location="https://keycloak-cloudtrust-staging.openshift.elca-services.com/auth/realms/Cloudtrust/protocol/saml" />
-        <KeyDescriptor use="signing">
-            <dsig:KeyInfo>
-                <dsig:KeyName>lgYRm93EKXIn8CWUhgtyBYN6Krj2fQya8va1oYyfZi8</dsig:KeyName>
-                <dsig:X509Data>
-                    <dsig:X509Certificate>MIICozCCAYsCBgFnocqUFjANBgkqhkiG9w0BAQsFADAVMRMwEQYDVQQDDApDbG91ZHRydXN0MB4XDTE4MTIxMjA5MzkyN1oXDTI4MTIxMjA5NDEwN1owFTETMBEGA1UEAwwKQ2xvdWR0cnVzdDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAJjiHQ4fW1hms71+szNbhbmIb0nqsyy3M6lEi5QbGBbk0Fg7JMn8nSCOFY0U8hTSWZg+utDWDG3VwX8BBSCUr/qSuW+bc0e+SRRzulH5m83v8gWzSFciiZ8aBuhsa0QqiduT3uYUb2+H+JGpm8BUaWVwiqqGXL9Qd/aK0zH2CB7ZWWbtTOs4ztozzw3cRrwMimG+x//4EsHFRxGRuHwpNpyelQO9WhJcIOPqXb9Tt6AtQdiCkxtnjiXhzTs6yQ1njPoA7Fo9lFe2HMm6NT9AUTg08aYmH+94nKHehlLqzBhIXRM0EUl/Ii1wKzwn/GHs9sYMAQJxxPF/53PlhEYazgcCAwEAATANBgkqhkiG9w0BAQsFAAOCAQEAStXATjaH0DVp4CCZLk2Gtqi/CuNsTowUvpBUO9T3OGgXlHVtMeqbTE7MGvtgiwXyKm3I9EV9pEKBZrDepW39wqf73PBEiIalGjx4sGiQh+nEa/kpMtRRiChNYWN/8Ig/yYdaZyGK5EVT5Occ0cn44g6foJSZke95oAocbSTV3/3oUdtjJMi0zTrbZvAsUcPkhMjpxM43VY4iNW7pGQhNMq9GhlMqfIPSwgmdkfaJPfhGB6hI/ytXURJ0X1X13KaIq4hI1qrTSt0vw6WKxDKlKWO+zxlCRCSsVQ9/w4Dh81RMVGwfGnBMNu7rIbvHB6cUaRC6LRIZeEVq0vVhPKx31g==</dsig:X509Certificate>
-                </dsig:X509Data>
-            </dsig:KeyInfo>
-        </KeyDescriptor>
-    </IDPSSODescriptor>
-</EntityDescriptor>
+<md:EntityDescriptor xmlns="urn:oasis:names:tc:SAML:2.0:metadata" xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
+                     xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+                     entityID="https://idp-staging.dev.trustid.ch/auth/realms/DEP">
+    <md:IDPSSODescriptor WantAuthnRequestsSigned="true"
+                         protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+        <md:KeyDescriptor use="signing">
+            <ds:KeyInfo>
+                <ds:KeyName>wWJh0tBubZe0I7W529zC5qnRcKq1LyGPQgpa81jRBg8</ds:KeyName>
+                <ds:X509Data>
+                    <ds:X509Certificate>
+                        MIIClTCCAX0CBgFqWSJdnDANBgkqhkiG9w0BAQsFADAOMQwwCgYDVQQDDANERVAwHhcNMTkwNDI2MTAxMTI1WhcNMjkwNDI2MTAxMzA1WjAOMQwwCgYDVQQDDANERVAwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCDCxPJP/y97h8rqLuXl5GZSHlbAMwYVByDerEYrnRJCBwn6Jk3wm6YdOc3OeBADUmDfwjRVqaXA2W2ejR7BPmPH5z7AWnlEl0Qe5nFnW6MmUYTI5ohPpnYFQE1fx8K7js4FXgJ0mQd8kMjOmjeUJb8FeVda59UQ0h3Hbuny5Zt9JUVHgGwEtMIsVq0OmMJWhhheF8aqw+3rlC1vgXhoPYDjcQHVL4o+N6aaLJdwBtmm0RqrMRbMMOf9ePq66dNltGv6Yazj0KVY9hsdSgdrXOITIPqUGxPHUqhLidE9XENH4oDjtR8UdGGY1x6QSrgc3zKT7l2YY7Q+80TFVc+zZHbAgMBAAEwDQYJKoZIhvcNAQELBQADggEBAGsRG/IWJy7akRWdklVo4k1nQTgsHI5++IbeuOs2oI97J6OMAu4VvV3NrruzepifryeXm1AkRbOaXQh7ObaV0TIQ30NxzVDGQHeOCQuexBYGClXbVa9FU7cxpdCsJNxeGv+Gvt3w/qwTQaXKDyakhYC2kP6vqdkMXPEuMlnX0XMU23fyYQX+6wbgg9SCD0sMvOU0aaaMCI2GYdNGUIuZ3TOg51rWMd16cdoUowd8R9EqXq9mhr6YzHKHYiUO/EGHR0kjW3zSQ2z5xvYliJJpSH3Zy0/L5FgoqVYWrZc+nDjlhEyRoR6nwyCQTP7gkz65C23Yls21fQneYx+CDRNgRAM=
+                    </ds:X509Certificate>
+                </ds:X509Data>
+            </ds:KeyInfo>
+        </md:KeyDescriptor>
+        <md:ArtifactResolutionService Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP"
+                                      Location="https://idp-staging.dev.trustid.ch/auth/realms/DEP/protocol/saml/resolve"
+                                      index="0"/>
+        <md:SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+                                Location="https://idp-staging.dev.trustid.ch/auth/realms/DEP/protocol/saml"/>
+        <md:SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+                                Location="https://idp-staging.dev.trustid.ch/auth/realms/DEP/protocol/saml"/>
+        <md:SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Artifact"
+                                Location="https://idp-staging.dev.trustid.ch/auth/realms/DEP/protocol/saml"/>
+        <md:NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:persistent</md:NameIDFormat>
+        <md:NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</md:NameIDFormat>
+        <md:NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</md:NameIDFormat>
+        <md:NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress</md:NameIDFormat>
+        <md:SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+                                Location="https://idp-staging.dev.trustid.ch/auth/realms/DEP/protocol/saml"/>
+        <md:SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+                                Location="https://idp-staging.dev.trustid.ch/auth/realms/DEP/protocol/saml"/>
+        <md:SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP"
+                                Location="https://idp-staging.dev.trustid.ch/auth/realms/DEP/protocol/saml"/>
+        <md:SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Artifact"
+                                Location="https://idp-staging.dev.trustid.ch/auth/realms/DEP/protocol/saml"/>
+    </md:IDPSSODescriptor>
+</md:EntityDescriptor>
