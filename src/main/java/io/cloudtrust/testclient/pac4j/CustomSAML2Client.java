@@ -21,7 +21,7 @@ public class CustomSAML2Client extends SAML2Client {
     }
 
     @Override
-    protected void internalInit() {
+    protected void internalInit(boolean forceReinit) {
         assertNotNull("configuration", this.configuration);
 
         // First of all, initialize the configuration. It may dynamically load some properties, if it is not a static one.

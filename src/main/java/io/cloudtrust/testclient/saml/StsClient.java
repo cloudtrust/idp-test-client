@@ -70,7 +70,7 @@ public class StsClient {
         stsClient.setKeySize(128);
         stsClient.setAddressingNamespace("http://www.w3.org/2005/08/addressing");
         stsClient.setSendRenewing(true);
-        stsClient.setTtl(200);
+        stsClient.setTtl(300);
 
         return stsClient;
     }
