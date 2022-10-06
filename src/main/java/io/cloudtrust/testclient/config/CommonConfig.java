@@ -66,6 +66,8 @@ public class CommonConfig {
     private String oidcClientId;
     @Value("${oidc.secret:aSecret}")
     private String oidcSecret;
+    @Value("${oidc.scopes:openid}")
+    private String oidcScopes;
 
     /**
      * Creates the bean for the pac4j configuration
@@ -102,6 +104,7 @@ public class CommonConfig {
         oidcConfiguration.setClientId(oidcClientId);
         oidcConfiguration.setSecret(oidcSecret);
         oidcConfiguration.setClientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC);
+        oidcConfiguration.setScope(oidcScopes);
         final OidcClient oidcClient = new OidcClient(oidcConfiguration);
         oidcClient.addAuthorizationGenerator((ctx, session, profile) -> {
             profile.addRole("ROLE_ADMIN");
