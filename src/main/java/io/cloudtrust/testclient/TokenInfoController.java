@@ -6,12 +6,41 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
 import com.nimbusds.oauth2.sdk.token.RefreshToken;
 import io.cloudtrust.testclient.config.ProtocolType;
+import io.cloudtrust.testclient.pac4j.CustomSAML2Client;
 import io.cloudtrust.testclient.saml.SamlResponseBindingType;
 import io.cloudtrust.testclient.saml.StsClient;
+import net.shibboleth.utilities.java.support.xml.SerializeSupport;
+import okhttp3.Call;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.processor.FedizRequest;
 import org.apache.cxf.fediz.spring.authentication.FederationAuthenticationToken;
+import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
+import org.opensaml.core.xml.io.Marshaller;
+import org.opensaml.core.xml.io.MarshallingException;
+import org.opensaml.saml.common.messaging.SAMLMessageSecuritySupport;
+import org.opensaml.saml.saml2.core.LogoutRequest;
+import org.opensaml.saml.saml2.metadata.SingleLogoutService;
+import org.opensaml.security.SecurityException;
+import org.opensaml.xmlsec.SignatureSigningParameters;
+import org.opensaml.xmlsec.context.SecurityParametersContext;
+import org.opensaml.xmlsec.signature.support.SignatureException;
+import org.pac4j.core.client.Client;
+import org.pac4j.core.config.Config;
+import org.pac4j.core.context.WebContext;
+import org.pac4j.core.context.session.SessionStore;
 import org.pac4j.core.profile.UserProfile;
+import org.pac4j.core.util.FindBest;
+import org.pac4j.jee.context.JEEContextFactory;
+import org.pac4j.jee.context.session.JEESessionStore;
+import org.pac4j.saml.context.SAML2MessageContext;
+import org.pac4j.saml.crypto.DefaultSignatureSigningParametersProvider;
+import org.pac4j.saml.logout.impl.SAML2LogoutRequestBuilder;
+import org.pac4j.saml.profile.SAML2Profile;
 import org.pac4j.springframework.security.authentication.Pac4jAuthentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,8 +49,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.w3c.dom.Element;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
@@ -34,11 +69,23 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.util.Base64;
+import java.util.Map;
+import java.util.Optional;
+
+import static javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION;
 
 @Controller
 public class TokenInfoController {
+
+    private final static String SOAP11_STRUCTURE =
+            "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\">" +
+                    " <SOAP-ENV:Body>${BODY}</SOAP-ENV:Body>" +
+                    "</SOAP-ENV:Envelope>";
 
     @Value("${connection.protocol:WSFED}")
     private ProtocolType protocol;
@@ -47,6 +94,9 @@ public class TokenInfoController {
 
     @Autowired
     private StsClient stsCLient;
+
+    @Autowired
+    private Config config;
 
     @GetMapping(value = "/")
     public String home(Model model, HttpServletRequest req) {
@@ -64,8 +114,9 @@ public class TokenInfoController {
 
     @GetMapping(value = "/samlRenew")
     public String renewAssertion(Model model, HttpServletRequest req) throws Exception {
-        String newAssertion = stsCLient.renewAssertion((String) req.getSession().getAttribute("saml_assertion"));
-        req.getSession().setAttribute("saml_assertion", newAssertion);
+        String initialAssertion = new String(Base64.getDecoder().decode((String) req.getSession().getAttribute("saml_assertion")), StandardCharsets.UTF_8);
+        String newAssertion = stsCLient.renewAssertion(initialAssertion);
+        req.getSession().setAttribute("saml_assertion", Base64.getEncoder().encodeToString(newAssertion.getBytes(StandardCharsets.UTF_8)));
         return authenticated(model, req);
     }
 
@@ -132,11 +183,11 @@ public class TokenInfoController {
                     String assertionFromProfile = (String) profile.getAttribute("saml_assertion");
                     if (assertionFromSession != null) {
                         // assertion from the session
-                        assertionStr = formatXML(assertionFromSession);
+                        assertionStr = formatXML(new String(Base64.getDecoder().decode(assertionFromSession),StandardCharsets.UTF_8));
                     } else if (assertionFromProfile != null) {
                         // assertion from the profile
                         session.setAttribute("saml_assertion", assertionFromProfile);
-                        assertionStr = formatXML(assertionFromProfile);
+                        assertionStr = formatXML(new String(Base64.getDecoder().decode(assertionFromProfile),StandardCharsets.UTF_8));
                     } else {
                         // no assertion found
                         assertionStr = "<token not found>";
@@ -192,7 +243,7 @@ public class TokenInfoController {
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             transformerFactory.setAttribute("indent-number", 2);
             Transformer transformer = transformerFactory.newTransformer();
-            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            transformer.setOutputProperty(OMIT_XML_DECLARATION, "yes");
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             transformer.transform(input, xmlOutput);
             String str = xmlOutput.getWriter().toString();
@@ -221,4 +272,106 @@ public class TokenInfoController {
             out.append("  <error while parsing jwt>");
         }
     }
+
+    @GetMapping(value = "/backchannel-logout")
+    private String buildLogoutRequest(HttpServletRequest req, HttpServletResponse resp) throws MarshallingException, SecurityException, SignatureException {
+
+        Optional<Client> potentialClient = config.getClients().findClient(CustomSAML2Client.class.getSimpleName());
+        if (potentialClient.isPresent()) {
+            CustomSAML2Client client = (CustomSAML2Client) potentialClient.get();
+
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth instanceof Pac4jAuthentication) {
+                Pac4jAuthentication token = (Pac4jAuthentication) auth;
+                UserProfile profile = token.getProfile();
+                SessionStore bestSessionStore = FindBest.sessionStore(null, this.config, JEESessionStore.INSTANCE);
+                WebContext webContext = FindBest.webContextFactory(null, this.config, JEEContextFactory.INSTANCE).newContext(req, resp);
+
+                SAML2MessageContext msgContext = client.getContextProvider().buildContext(client, webContext, bestSessionStore);
+                final SAML2LogoutRequestBuilder saml2LogoutRequestBuilder = new SAML2LogoutRequestBuilder(client.getConfiguration());
+                LogoutRequest logoutRequest = saml2LogoutRequestBuilder.build(msgContext, (SAML2Profile) profile);
+                msgContext.getMessageContext().setMessage(logoutRequest);
+                SignatureSigningParameters signingParams = new DefaultSignatureSigningParametersProvider(client.getConfiguration()).build(msgContext.getSPSSODescriptor());
+                SecurityParametersContext spContext = new SecurityParametersContext();
+                spContext.setSignatureSigningParameters(signingParams);
+                msgContext.getMessageContext().addSubcontext(spContext);
+                // sign request if needed
+                if (msgContext.getIDPSSODescriptor().getWantAuthnRequestsSigned()) {
+                    SAMLMessageSecuritySupport.signMessage(msgContext.getMessageContext());
+                }
+
+                final var idpDescriptor = msgContext.getIDPSSODescriptor();
+                Optional<SingleLogoutService> logoutUrlOpt = idpDescriptor.getSingleLogoutServices().stream().filter(s -> s.getBinding().contains("SOAP")).findFirst();
+                if (logoutUrlOpt.isPresent()) {
+                    String logoutUrl = logoutUrlOpt.get().getLocation();
+                    if (sendLogoutRequest(logoutUrl, logoutRequest)) {
+                        // remove the local session
+                        SecurityContextHolder.clearContext();
+                        Cookie cookieToDelete = new Cookie("JSESSIONID", null);
+                        cookieToDelete.setMaxAge(0);
+                        resp.addCookie(cookieToDelete);
+                        return "index";
+                    }
+                }
+            }
+        }
+        throw new RuntimeException("Logout failed");
+    }
+
+    private String toXml(LogoutRequest logoutRequest) throws MarshallingException {
+        Marshaller out = XMLObjectProviderRegistrySupport.getMarshallerFactory().getMarshaller(logoutRequest);
+        out.marshall(logoutRequest);
+        Element authDOM = logoutRequest.getDOM();
+        return SerializeSupport.nodeToString(authDOM, Map.of("xml-declaration", Boolean.FALSE));
+    }
+
+    public boolean sendLogoutRequest(String logoutUrl, LogoutRequest logoutRequest) {
+        try {
+            SSLContext sslContext = SSLContext.getInstance("SSL");
+            sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+            OkHttpClient.Builder newBuilder = new OkHttpClient.Builder();
+            newBuilder.sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) trustAllCerts[0]);
+            newBuilder.hostnameVerifier((hostname, session) -> true);
+
+            String logoutRequestStr = SOAP11_STRUCTURE.replace("${BODY}", toXml(logoutRequest));
+            System.out.println("SOAP Logout Request: " + logoutRequestStr);
+            RequestBody body = RequestBody.create(logoutRequestStr, MediaType.get("text/xml; charset=utf-8"));
+            Request request = new Request.Builder()
+                    .url(logoutUrl)
+                    .post(body)
+                    .build();
+
+            Call call = newBuilder.build().newCall(request);
+            try (Response response = call.execute()) {
+                if (response.code() == 200 && response.body() != null) {
+                    // logout success
+                    System.out.println("SOAP Logout Response: " + response.body().string());
+                    return true;
+                } else {
+                    System.err.println("SOAP Logout Response: " + response.body().string());
+                }
+            }
+        } catch (IOException | KeyManagementException | NoSuchAlgorithmException | MarshallingException e) {
+            System.err.println("Unexpected issue while sending the SOAP logout request");
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    TrustManager[] trustAllCerts = new TrustManager[]{
+            new X509TrustManager() {
+                @Override
+                public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+                }
+
+                @Override
+                public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+                }
+
+                @Override
+                public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                    return new java.security.cert.X509Certificate[]{};
+                }
+            }
+    };
 }
