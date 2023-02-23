@@ -16,7 +16,7 @@
         <springboot.version>2.7.0</springboot.version>
         <spring.version>5.3.20</spring.version>
         <fedizspring.version>1.6.0</fedizspring.version>
-        <apache-commons-text.version>1.9</apache-commons-text.version>
+        <apache-commons-text.version>1.10.0</apache-commons-text.version>
         <javax-xml-bind.version>2.3.1</javax-xml-bind.version>
         <apache-cxf.version>3.5.2</apache-cxf.version>
     </properties>
