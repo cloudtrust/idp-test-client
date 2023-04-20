@@ -16,6 +16,8 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Optional;
 
 public class CustomSAML2CredentialsExtractor extends SAML2CredentialsExtractor {
@@ -36,7 +38,7 @@ public class CustomSAML2CredentialsExtractor extends SAML2CredentialsExtractor {
                 AssertionMarshaller marshaller = new AssertionMarshaller();
                 Element plaintextElement = marshaller.marshall(assertion);
                 String originalAssertionString = xmlToString(plaintextElement);
-                context.setResponseHeader("saml_assertion", originalAssertionString);
+                context.setResponseHeader("saml_assertion", Base64.getEncoder().encodeToString(originalAssertionString.getBytes(StandardCharsets.UTF_8)));
             }
         } catch (MarshallingException | TransformerException e) {
             System.err.println("Unexpected issue while marshalling the assertion to String");

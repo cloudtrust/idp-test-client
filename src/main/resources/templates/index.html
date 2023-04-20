@@ -31,6 +31,21 @@
 				}
 				xhr.send();
 			}
+
+			function backchannelLogout() {
+				var xhr = new XMLHttpRequest();
+				xhr.open("get", "/backchannel-logout", true);
+				xhr.onreadystatechange = function() {
+					if (xhr.readyState === 4) {
+						if (xhr.status === 200) {
+							location = "/";
+						} else {
+							alert("backchannel logout failed");
+						}
+					}
+				}
+				xhr.send();
+			}
 		</script>
 
 		<!-- Header -->
@@ -89,6 +104,8 @@
 					<header>
 						<h3>TOKEN INFORMATION</h3>
 						<button id="renewSamlButton" type="button" style="background-color: white;" onclick="renewSaml()" th:if="${samlArtifactBinding}">Renew assertion</button>
+						<br>
+						<button id="backchannelLogoutButton" type="button" style="background-color: white;" onclick="backchannelLogout()">Backchannel logout</button>
 					</header>
 					<p><span style="white-space: pre; word-break: break-all;" th:if="${tokenInfo != null}" th:text="${tokenInfo}"></span></p>
 				</div>
