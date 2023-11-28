@@ -60,7 +60,7 @@ public class CommonConfig {
     private SamlResponseBindingType samlResponseBindingType;
 
 
-    @Value("${oidc.uri:http://localhost:8080/realms/TestRealm/.well-known/openid-configuration}")
+    @Value("${oidc.uri:http://localhost:8080/realms/DEP/.well-known/openid-configuration}")
     private String oidcURI;
     @Value("${oidc.clientId:OIDCTestClient}")
     private String oidcClientId;

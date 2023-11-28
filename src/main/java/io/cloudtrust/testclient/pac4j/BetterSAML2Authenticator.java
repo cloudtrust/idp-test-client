@@ -1,5 +1,6 @@
 package io.cloudtrust.testclient.pac4j;
 
+import org.apache.cxf.common.logging.LogUtils;
 import org.pac4j.core.context.WebContext;
 import org.pac4j.core.context.session.SessionStore;
 import org.pac4j.core.credentials.Credentials;
@@ -13,6 +14,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 /**
  * This class replaces the SAML2Authenticator with the sole purpose of correcting the validate method:
@@ -20,6 +22,7 @@ import java.util.Set;
  * can.
  */
 public final class BetterSAML2Authenticator extends SAML2Authenticator {
+    private static final Logger log = LogUtils.getL7dLogger(BetterSAML2Authenticator.class);
 
     public BetterSAML2Authenticator() {
         super("userid", new HashMap<>());
@@ -47,7 +50,7 @@ public final class BetterSAML2Authenticator extends SAML2Authenticator {
         Map<String, Object> attributes = new HashMap<>();
 
         for (final SAML2Credentials.SAMLAttribute attribute : credentials.getAttributes()) {
-            logger.debug("Processing profile attribute {}", attribute);
+            log.fine("Processing profile attribute "+attribute);
 
             final String name = attribute.getName();
             final String friendlyName = attribute.getFriendlyName();

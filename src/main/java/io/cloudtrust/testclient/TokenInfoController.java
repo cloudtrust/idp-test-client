@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
 import com.nimbusds.oauth2.sdk.token.RefreshToken;
+
 import io.cloudtrust.testclient.config.ProtocolType;
 import io.cloudtrust.testclient.pac4j.CustomSAML2Client;
 import io.cloudtrust.testclient.saml.SamlResponseBindingType;
@@ -16,7 +17,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import org.apache.cxf.fediz.core.Claim;
+
 import org.apache.cxf.fediz.core.processor.FedizRequest;
 import org.apache.cxf.fediz.spring.authentication.FederationAuthenticationToken;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
@@ -42,8 +43,11 @@ import org.pac4j.saml.crypto.DefaultSignatureSigningParametersProvider;
 import org.pac4j.saml.logout.impl.SAML2LogoutRequestBuilder;
 import org.pac4j.saml.profile.SAML2Profile;
 import org.pac4j.springframework.security.authentication.Pac4jAuthentication;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -81,8 +85,9 @@ import static javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION;
 
 @Controller
 public class TokenInfoController {
+    private static final Logger logger = LoggerFactory.getLogger(TokenInfoController.class);
 
-    private final static String SOAP11_STRUCTURE =
+    private static final String SOAP11_STRUCTURE =
             "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\">" +
                     " <SOAP-ENV:Body>${BODY}</SOAP-ENV:Body>" +
                     "</SOAP-ENV:Envelope>";
@@ -93,19 +98,21 @@ public class TokenInfoController {
     private SamlResponseBindingType samlResponseBindingType;
 
     @Autowired
-    private StsClient stsCLient;
+    private StsClient stsClient;
 
     @Autowired
     private Config config;
 
     @GetMapping(value = "/")
     public String home(Model model, HttpServletRequest req) {
+        logger.warn("**** FPX **** root");
         model.addAttribute("principal", req.getUserPrincipal());
         return "index";
     }
 
     @GetMapping(value = "/secured")
     public String authenticated(Model model, HttpServletRequest req) {
+        logger.warn("**** FPX **** secured");
         model.addAttribute("principal", req.getUserPrincipal());
         model.addAttribute("tokenInfo", buildTokenInfo(req.getUserPrincipal(), req.getSession()));
         model.addAttribute("samlArtifactBinding", protocol == ProtocolType.SAML && samlResponseBindingType == SamlResponseBindingType.ARTIFACT);
@@ -114,8 +121,13 @@ public class TokenInfoController {
 
     @GetMapping(value = "/samlRenew")
     public String renewAssertion(Model model, HttpServletRequest req) throws Exception {
-        String initialAssertion = new String(Base64.getDecoder().decode((String) req.getSession().getAttribute("saml_assertion")), StandardCharsets.UTF_8);
-        String newAssertion = stsCLient.renewAssertion(initialAssertion);
+        Object attrb = req.getSession().getAttribute("saml_assertion");
+        if (attrb==null) {
+            throw new AccessDeniedException("Missing token");
+        }
+        logger.warn("**** FPX **** samlRenew {}", attrb);
+        String initialAssertion = new String(Base64.getDecoder().decode((String) attrb), StandardCharsets.UTF_8);
+        String newAssertion = stsClient.renewAssertion(initialAssertion);
         req.getSession().setAttribute("saml_assertion", Base64.getEncoder().encodeToString(newAssertion.getBytes(StandardCharsets.UTF_8)));
         return authenticated(model, req);
     }
@@ -124,8 +136,7 @@ public class TokenInfoController {
         StringBuilder out = new StringBuilder();
 
         if (p != null) {
-            out.append("User\n" +
-                    "Principal: " + p.getName() + "\n");
+            out.append("User\n").append("Principal: ").append(p.getName()).append('\n');
         } else {
             out.append("Missing user principal information\n");
         }
@@ -133,48 +144,46 @@ public class TokenInfoController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         auth.getCredentials();
         if (auth instanceof FederationAuthenticationToken) {
-            FederationAuthenticationToken fedAuthToken = (FederationAuthenticationToken) auth;
+            FederationAuthenticationToken fedAuthToken = (FederationAuthenticationToken)auth;
             out.append("Recognised claims:\n");
-            for (Claim claim : fedAuthToken.getClaims()) {
+            fedAuthToken.getClaims().forEach(claim -> {
                 if (claim.getValue() instanceof Iterable) {
                     for (Object value : (Iterable<?>) claim.getValue()) {
-                        out.append("    " + claim.getClaimType() + ": " + value + "\n");
+                        out.append("    ").append(claim.getClaimType()).append(':').append(value).append('\n');
                     }
                 } else {
-                    out.append("    " + claim.getClaimType() + ": " + claim.getValue() + "\n");
+                    out.append("    ").append(claim.getClaimType()).append(": ").append(claim.getValue()).append('\n');
                 }
-            }
+            });
             out.append("\n");
 
             out.append("Raw token:\n");
             if (fedAuthToken.getCredentials() instanceof FedizRequest) {
-                FedizRequest fedReq = (FedizRequest) fedAuthToken.getCredentials();
+                FedizRequest fedReq = (FedizRequest)fedAuthToken.getCredentials();
                 try {
-                    out.append(formatXML(fedReq.getResponseToken()) + "\n");
+                    out.append(formatXML(fedReq.getResponseToken())).append('\n');
                 } catch (Exception ex) {
-                    out.append("Failed to parse raw token: " + ex.toString() + "\n");
+                    out.append("Failed to parse raw token: ").append(ex.toString()).append('\n');
                 }
             } else {
                 out.append("Cannot get raw token\n");
             }
         } else if (auth instanceof Pac4jAuthentication) {
-            Pac4jAuthentication token = (Pac4jAuthentication) auth;
+            Pac4jAuthentication token = (Pac4jAuthentication)auth;
             UserProfile profile = token.getProfile();
             out.append("Recognised claims:\n");
             if (profile != null) {
                 for (String claim : profile.getAttributes().keySet()) {
                     if (profile.getAttribute(claim) instanceof Iterable) {
                         for (Object value : (Iterable<?>) profile.getAttribute(claim)) {
-                            out.append("    " + claim + ": " + value + "\n");
+                            out.append("    ").append(claim).append(": ").append(value).append('\n');
                         }
                     } else {
-                        out.append("    " + claim + ": " + profile.getAttribute(claim) + "\n");
+                        out.append("    ").append(claim).append(": ").append(profile.getAttribute(claim)).append('\n');
                     }
                 }
             }
-            out.append("\n");
-            out.append("Saved profile:\n");
-            out.append(token + "\n\n");
+            out.append("\nSaved profile:\n").append(token).append("\n\n");
             if (profile != null) {
                 if (protocol == ProtocolType.SAML && samlResponseBindingType == SamlResponseBindingType.ARTIFACT) {
                     out.append("Formatted token:\n");
@@ -192,7 +201,7 @@ public class TokenInfoController {
                         // no assertion found
                         assertionStr = "<token not found>";
                     }
-                    out.append("  " + assertionStr);
+                    out.append("  ").append(assertionStr);
                 } else if (protocol == ProtocolType.OIDC) {
                     out.append("Access token:\n");
                     // access token
@@ -274,15 +283,14 @@ public class TokenInfoController {
     }
 
     @GetMapping(value = "/backchannel-logout")
-    private String buildLogoutRequest(HttpServletRequest req, HttpServletResponse resp) throws MarshallingException, SecurityException, SignatureException {
-
+    public String buildLogoutRequest(HttpServletRequest req, HttpServletResponse resp) throws MarshallingException, SecurityException, SignatureException {
         Optional<Client> potentialClient = config.getClients().findClient(CustomSAML2Client.class.getSimpleName());
         if (potentialClient.isPresent()) {
             CustomSAML2Client client = (CustomSAML2Client) potentialClient.get();
 
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if (auth instanceof Pac4jAuthentication) {
-                Pac4jAuthentication token = (Pac4jAuthentication) auth;
+                Pac4jAuthentication token = (Pac4jAuthentication)auth;
                 UserProfile profile = token.getProfile();
                 SessionStore bestSessionStore = FindBest.sessionStore(null, this.config, JEESessionStore.INSTANCE);
                 WebContext webContext = FindBest.webContextFactory(null, this.config, JEEContextFactory.INSTANCE).newContext(req, resp);
@@ -334,7 +342,7 @@ public class TokenInfoController {
             newBuilder.hostnameVerifier((hostname, session) -> true);
 
             String logoutRequestStr = SOAP11_STRUCTURE.replace("${BODY}", toXml(logoutRequest));
-            System.out.println("SOAP Logout Request: " + logoutRequestStr);
+            logger.debug("SOAP Logout Request: {}", logoutRequestStr);
             RequestBody body = RequestBody.create(logoutRequestStr, MediaType.get("text/xml; charset=utf-8"));
             Request request = new Request.Builder()
                     .url(logoutUrl)
@@ -345,15 +353,14 @@ public class TokenInfoController {
             try (Response response = call.execute()) {
                 if (response.code() == 200 && response.body() != null) {
                     // logout success
-                    System.out.println("SOAP Logout Response: " + response.body().string());
+                    logger.debug("SOAP Logout Response: {}", response.body());
                     return true;
                 } else {
-                    System.err.println("SOAP Logout Response: " + response.body().string());
+                    logger.error("SOAP Logout Response: {}", response.body());
                 }
             }
         } catch (IOException | KeyManagementException | NoSuchAlgorithmException | MarshallingException e) {
-            System.err.println("Unexpected issue while sending the SOAP logout request");
-            e.printStackTrace();
+            logger.error("Unexpected issue while sending the SOAP logout request", e);
         }
         return false;
     }

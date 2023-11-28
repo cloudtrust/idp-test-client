@@ -13,12 +13,14 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <pac4j.version>5.4.3</pac4j.version>
         <pac4jsec.version>7.0.3</pac4jsec.version>
-        <springboot.version>2.7.0</springboot.version>
-        <spring.version>5.3.20</spring.version>
+        <springboot.version>2.7.18</springboot.version>
+        <spring.version>5.3.31</spring.version>
         <fedizspring.version>1.6.0</fedizspring.version>
         <apache-commons-text.version>1.9</apache-commons-text.version>
-        <javax-xml-bind.version>2.3.1</javax-xml-bind.version>
+        <javax-xml-bind.version>2.3.0</javax-xml-bind.version>
         <apache-cxf.version>3.5.2</apache-cxf.version>
+        <wss4j.version>2.4.0</wss4j.version>
+        <wss4j-recent.version>3.0.2</wss4j-recent.version>
     </properties>
 
     <scm>
@@ -64,7 +66,12 @@
         <dependency>
             <groupId>org.apache.wss4j</groupId>
             <artifactId>wss4j-ws-security-dom</artifactId>
-            <version>2.4.0</version>
+            <version>${wss4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.wss4j</groupId>
+            <artifactId>wss4j-ws-security-stax</artifactId>
+            <version>${wss4j.version}</version>
         </dependency>
         <dependency>
             <groupId>org.pac4j</groupId>
@@ -96,6 +103,31 @@
             <artifactId>jaxb-api</artifactId>
             <version>${javax-xml-bind.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-core</artifactId>
+            <version>${javax-xml-bind.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>${javax-xml-bind.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.activation</groupId>
+            <artifactId>activation</artifactId>
+            <version>1.1</version>
+        </dependency>
+        <!--dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>${javax-xml-bind.version}</version>
+        </dependency-->
+        <!--dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <version>${javax-xml-bind.version}</version>
+        </dependency-->
 
         <!-- CXF -->
         <dependency>
@@ -112,6 +144,11 @@
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-features-logging</artifactId>
+            <version>${apache-cxf.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-ws-security</artifactId>
             <version>${apache-cxf.version}</version>
         </dependency>
 
