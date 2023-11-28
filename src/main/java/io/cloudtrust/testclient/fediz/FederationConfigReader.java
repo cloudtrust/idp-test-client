@@ -13,6 +13,7 @@ import org.springframework.web.context.ServletContextAware;
 
 import javax.servlet.ServletContext;
 import javax.xml.bind.JAXBException;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -24,8 +25,8 @@ import java.util.List;
  * for example one contained in a jar that needs to be accessed via the classpath.
  */
 public class FederationConfigReader implements FederationConfig, ServletContextAware {
-
     private static final Logger LOG = LoggerFactory.getLogger(FederationConfigReader.class);
+
     private FedizConfigurator configurator = new FedizConfigurator();
     private ServletContext servletContext;
 
@@ -57,7 +58,7 @@ public class FederationConfigReader implements FederationConfig, ServletContextA
         try (BufferedReader br = new BufferedReader(new InputStreamReader(getConfigFile().getInputStream()))) {
             configurator.loadConfig(br);
         } catch (JAXBException | IOException e) {
-            LOG.error("Failed to parse '" + getConfigFile().getDescription() + "'", e);
+            LOG.warn("Failed to parse '{}': {}", getConfigFile().getDescription(), e.getMessage());
             throw new BeanCreationException("Failed to parse '" + getConfigFile().getDescription() + "'", e);
         }
     }
@@ -123,8 +124,7 @@ public class FederationConfigReader implements FederationConfig, ServletContextA
     @Override
     public FedizContext getFedizContext() {
         if (servletContext != null) {
-            LOG.debug("Reading federation configuration for context '{}'",
-                    servletContext.getContextPath());
+            LOG.debug("Reading federation configuration for context '"+servletContext.getContextPath()+"'");
             return getFedizContext(servletContext.getContextPath());
         } else {
             Assert.notNull(contextName, "Property 'contextName' must be configured because ServletContext null");

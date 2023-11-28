@@ -1,6 +1,7 @@
 package io.cloudtrust.testclient.config;
 
 import io.cloudtrust.testclient.fediz.FederationConfigReader;
+
 import org.apache.cxf.fediz.spring.authentication.FederationAuthenticationProvider;
 import org.apache.cxf.fediz.spring.web.FederationAuthenticationEntryPoint;
 import org.apache.cxf.fediz.spring.web.FederationAuthenticationFilter;
@@ -34,7 +35,6 @@ import javax.servlet.Filter;
  */
 @EnableWebSecurity
 public class SecurityConfig {
-
     /**
      * This class contains the configuration of the access to the secured /secured controller for both the
      * fediz and pac4j libraries, and the logout filters for the fediz libraries
@@ -161,14 +161,12 @@ public class SecurityConfig {
          * @throws Exception required by overwritten method signature
          */
         protected void configure(final HttpSecurity http) throws Exception {
-
             boolean isWsFed = protocol == ProtocolType.WSFED;
             String logoutPath = isWsFed ? fedizConfig.getFedizContext().getLogoutURL() : "?defaulturlafterlogoutafteridp";
             String logoutAddress = isWsFed ? fedizConfig.getFedizContext().getAudienceUris().get(0) : connectionAddress;
             if (!logoutAddress.endsWith("/") && !logoutPath.startsWith("/")) {
                 logoutAddress += "/";
             }
-
 
             final LogoutFilter filter = new LogoutFilter(config, logoutAddress + logoutPath);
             filter.setLocalLogout(!isWsFed);
@@ -191,7 +189,6 @@ public class SecurityConfig {
     @Configuration
     @Order(3)
     protected static class CallbackConfig extends WebSecurityConfigurerAdapter {
-
         @Autowired
         private Config config;
 
@@ -219,5 +216,4 @@ public class SecurityConfig {
                     .logoutSuccessUrl("/logout");
         }
     }
-
 }
