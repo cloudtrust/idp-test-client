@@ -4,6 +4,7 @@ import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.ext.logging.LoggingInInterceptor;
 import org.apache.cxf.ext.logging.LoggingOutInterceptor;
+import org.apache.cxf.ws.security.SecurityConstants;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.apache.cxf.ws.security.trust.STSClient;
 import org.apache.http.client.utils.URIBuilder;
@@ -33,7 +34,6 @@ public class StsClient {
     private String samlStsUrl;
 
     public String renewAssertion(String assertion) throws Exception {
-        System.out.println(assertion);
         // deserialize assertion to XML node
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
@@ -70,7 +70,8 @@ public class StsClient {
         stsClient.setKeySize(128);
         stsClient.setAddressingNamespace("http://www.w3.org/2005/08/addressing");
         stsClient.setSendRenewing(true);
-        stsClient.setTtl(300);
+        stsClient.setTtl(200);
+        stsClient.getProperties().put(SecurityConstants.ASYMMETRIC_SIGNATURE_ALGORITHM, "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256");
 
         return stsClient;
     }

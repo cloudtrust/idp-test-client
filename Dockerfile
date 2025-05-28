@@ -17,5 +17,6 @@ USER 1000
 # For generated samlSPMetadata.xml
 WORKDIR /tmp
 
-CMD ["java", "-jar", "/opt/IdPTestClient.jar"]
+CMD ["java", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005", "-jar", "/opt/IdPTestClient.jar"]
 EXPOSE 7000
+EXPOSE 5005
