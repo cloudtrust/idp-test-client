@@ -96,7 +96,8 @@ public class CommonConfig {
                 cfg.setResponseBindingType(SAMLConstants.SAML2_REDIRECT_BINDING_URI);
                 break;
         }
-        final SAML2Client saml2Client = new CustomSAML2Client(cfg);
+        final ProxyConfig proxyConfig = new ProxyConfig();
+        final SAML2Client saml2Client = new CustomSAML2Client(cfg, proxyConfig);
         saml2Client.setAuthenticator(new BetterSAML2Authenticator());
 
         final OidcConfiguration oidcConfiguration = new OidcConfiguration();
