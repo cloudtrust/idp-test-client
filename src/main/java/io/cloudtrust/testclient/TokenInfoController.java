@@ -101,6 +101,7 @@ public class TokenInfoController {
     @GetMapping(value = "/")
     public String home(Model model, HttpServletRequest req) {
         model.addAttribute("principal", req.getUserPrincipal());
+        model.addAttribute("protocol", protocol.toString());
         return "index";
     }
 
@@ -183,11 +184,11 @@ public class TokenInfoController {
                     String assertionFromProfile = (String) profile.getAttribute("saml_assertion");
                     if (assertionFromSession != null) {
                         // assertion from the session
-                        assertionStr = formatXML(new String(Base64.getDecoder().decode(assertionFromSession),StandardCharsets.UTF_8));
+                        assertionStr = formatXML(new String(Base64.getDecoder().decode(assertionFromSession), StandardCharsets.UTF_8));
                     } else if (assertionFromProfile != null) {
                         // assertion from the profile
                         session.setAttribute("saml_assertion", assertionFromProfile);
-                        assertionStr = formatXML(new String(Base64.getDecoder().decode(assertionFromProfile),StandardCharsets.UTF_8));
+                        assertionStr = formatXML(new String(Base64.getDecoder().decode(assertionFromProfile), StandardCharsets.UTF_8));
                     } else {
                         // no assertion found
                         assertionStr = "<token not found>";
