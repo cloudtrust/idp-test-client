@@ -89,10 +89,22 @@
 
 					</div>
 
-					<footer>
-						<a th:href="@{/secured}" class="button" th:if="${principal == null}">Connect with trustID</a>
-					</footer>
-				</div>
+                    <footer class="wrapper style1 align-center">
+                        <div class="inner">
+                            <form th:if="${principal == null}" action="/secured" method="get">
+                                <div style="margin-bottom: 0.5em;">
+                                    <button type="submit" class="button primary">
+                                        Connect with trustID
+                                    </button>
+                                </div>
+
+                                <div th:if="${protocol == 'OIDC'}" class="field half">
+                                    <input type="text" name="acr_values" placeholder="Enter ACR values...">
+                                </div>
+                            </form>
+                        </div>
+                    </footer>
+                </div>
 			</section>
 
 		<div th:if="${principal != null}">

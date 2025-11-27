@@ -1,6 +1,7 @@
 package io.cloudtrust.testclient.config;
 
 import io.cloudtrust.testclient.fediz.FederationConfigReader;
+import io.cloudtrust.testclient.pac4j.OidcAcrValuesFilter;
 import org.apache.cxf.fediz.spring.authentication.FederationAuthenticationProvider;
 import org.apache.cxf.fediz.spring.web.FederationAuthenticationEntryPoint;
 import org.apache.cxf.fediz.spring.web.FederationAuthenticationFilter;
@@ -105,7 +106,8 @@ public class SecurityConfig {
             Filter filter = federationFilter();
             switch (protocol) {
                 case OIDC:
-                    filter = new SecurityFilter(config, "oidcClient");
+                    SecurityFilter securityFilter = new SecurityFilter(config, "oidcClient");
+                    filter = new OidcAcrValuesFilter(config, securityFilter);
                     break;
                 case SAML:
                     filter = new SecurityFilter(config, "CustomSaml2Client");
