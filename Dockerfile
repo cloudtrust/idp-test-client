@@ -1,4 +1,4 @@
-FROM docker-remote.artifactory.svc.elca.ch/openjdk:11.0.16-jre-slim-bullseye
+FROM r-docker-registry-1-docker-io.artifactory.svc.elca.ch/openjdk:11.0.16-jre-slim-bullseye
 
 LABEL name="ephemeral/idp-test-client" releaseName="idp-test-client" repository="prj-cloudtrust-docker" releaseRepository="prj-cloudtrust-docker"
 ARG version=
