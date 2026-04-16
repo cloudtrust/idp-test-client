@@ -4,7 +4,7 @@
 
     <groupId>io.cloudtrust</groupId>
     <artifactId>IdPTestClient</artifactId>
-    <version>3.10.1-SNAPSHOT</version>
+    <version>3.10.2-SNAPSHOT</version>
 
     <properties>
         <java.version>11</java.version>
