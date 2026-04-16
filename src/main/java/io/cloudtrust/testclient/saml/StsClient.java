@@ -8,6 +8,7 @@ import org.apache.cxf.ws.security.SecurityConstants;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.apache.cxf.ws.security.trust.STSClient;
 import org.apache.http.client.utils.URIBuilder;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.w3c.dom.Document;
@@ -26,12 +27,19 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URISyntaxException;
 import java.time.Instant;
+import java.util.Properties;
 
 @Controller
 public class StsClient {
 
     @Value("${saml.sts.wsdl}")
     private String samlStsUrl;
+
+    private final Properties stsCryptoProperties;
+
+    public StsClient(@Qualifier("stsCryptoProperties") Properties stsCryptoProperties) {
+        this.stsCryptoProperties = stsCryptoProperties;
+    }
 
     public String renewAssertion(String assertion) throws Exception {
         // deserialize assertion to XML node
@@ -56,7 +64,8 @@ public class StsClient {
 
         Bus bus = BusFactory.getThreadDefaultBus();
         STSClient stsClient = new STSClient(bus);
-        stsClient.getRequestContext().put("security.signature.properties", "sts-client-crypto.properties");
+
+        stsClient.getRequestContext().put("security.signature.properties", stsCryptoProperties);
         stsClient.setWsdlLocation(uriWsdlBuilder.build().toString());
         stsClient.setServiceName("{http://docs.oasis-open.org/ws-sx/ws-trust/200512/}SecurityTokenService");
         stsClient.setEndpointName("{http://docs.oasis-open.org/ws-sx/ws-trust/200512/}Transport_Port");

@@ -31,6 +31,7 @@ import org.springframework.security.web.authentication.session.SessionFixationPr
 
 import java.io.File;
 import java.util.Optional;
+import java.util.Properties;
 
 /**
  * Common spring configuration for beans required for the fediz and Pac4j libraries, using annotations rather than
@@ -54,6 +55,15 @@ public class CommonConfig {
     private String samlKeystorePassword;
     @Value("${saml.privateKeyPassword:localpass}")
     private String samlPrivateKeyPassword;
+
+    @Value("${saml.sts.keystorePath:${saml.keystorePath:resource:localstore.jks}}")
+    private String stsKeystorePath;
+    @Value("${saml.sts.keystorePassword:${saml.keystorePassword:localpass}}")
+    private String stsKeystorePassword;
+    @Value("${saml.sts.privateKeyPassword:${saml.privateKeyPassword:localpass}}")
+    private String stsPrivateKeyPassword;
+    @Value("${saml.sts.keystoreAlias:samlkeys}")
+    private String stsKeystoreAlias;
     @Value("${saml.identityProviderMetadataPath:resource:SAMLIDP.xml}")
     private String samlIdentityProviderMetadataPath;
     @Value("${saml.responseBindingType:ARTIFACT}")
@@ -134,6 +144,27 @@ public class CommonConfig {
         return new CustomAuthorizer();
     }
 
+
+    /**
+     * Creates a Properties bean for STS crypto configuration.
+     * Defaults to the SAML keystore settings, but can be overridden with saml.sts.* properties.
+     */
+    @Bean
+    public Properties stsCryptoProperties() {
+        Properties cryptoProperties = new Properties();
+        cryptoProperties.put("org.apache.ws.security.crypto.merlin.keystore.file", resolveKeystorePath(stsKeystorePath));
+        cryptoProperties.put("org.apache.ws.security.crypto.merlin.keystore.password", stsKeystorePassword);
+        cryptoProperties.put("org.apache.ws.security.crypto.merlin.keystore.private.password", stsPrivateKeyPassword);
+        cryptoProperties.put("org.apache.ws.security.crypto.merlin.keystore.alias", stsKeystoreAlias);
+        return cryptoProperties;
+    }
+
+    private String resolveKeystorePath(String path) {
+        if (path.startsWith("resource:") || path.startsWith("classpath:") || path.startsWith("file:")) {
+            return path.substring(path.indexOf(':') + 1);
+        }
+        return path;
+    }
 
     /* --- Start of beans for fediz single sign-on configuration --- */
     @Bean
